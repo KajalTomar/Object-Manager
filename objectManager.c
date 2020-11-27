@@ -3,13 +3,15 @@
 // STUDENT NUMBER: 7793306
 // COURSE: COMP2160, SECTION: A01
 // INSTRUCTOR: Dr. Mehdi Niknam
-// ASSIGNMENT: 3, QUESTION: 1
+// ASSIGNMENT: 4, QUESTION: 1
 // 
-// REMARKS: This is the automated test suite for the table.c ADT implementation.. 
+// REMARKS: This is an implementaiont of an object manager. The clients will call 
+// the functions avaliable in the interface to allocate and retrieve memory. 
+// This memory manager will automatically clean up unused memory.  
 //-------------------------------------------------------------------------------
 
 #include<stdio.h>
-#include"table.h"
+#include"ObjectManager.h"
 
 //-----------------------------------------------------------------------------
 // CONSTANTS AND TYPES
@@ -24,16 +26,19 @@ typedef Struct Node node;
 
 Struct Node 
 {
-  ulong * numBytes;
-  ulong startAddr; 
-  Ref ref;
-  ulong count
+	Node * freePtr;
+	ulong numBytes;
+	ulong startAddr; 
+	Ref ref;
+	ulong count
 } 
 
-Static Node * head = NULL; 
-Static ulong numObject; 
-Static ulong bytesInUse;
-Static ulong bytesCollected; 
+static uchar buffer[MEMORY_SIZE]; //???
+
+static Node * head = NULL; 
+static ulong numObject; 
+static ulong bytesInUse;
+static ulong bytesCollected; 
 
 //-----------------------------------------------------------------------------
 // PROTOTYPES
@@ -66,10 +71,10 @@ static void validateBuffer(void);
 // -----------------------------------------------------------------------------------------
 Ref insertObject(ulong size)
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
-  return NULL_REF;
+  	return NULL_REF;
 } // insertObject
 
 // -----------------------------------------------------------------------------------------
@@ -81,9 +86,10 @@ Ref insertObject(ulong size)
 // -----------------------------------------------------------------------------------------
 void * retrieveObject(Ref ref)
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
+	return &buffer[startAddr];
 } // retrieveObject
 
 
@@ -95,8 +101,8 @@ void * retrieveObject(Ref ref)
 // -----------------------------------------------------------------------------------------
 void addReference( Ref ref )
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
 } // addReference
 
@@ -109,8 +115,8 @@ void addReference( Ref ref )
 // -----------------------------------------------------------------------------------------
 void dropReference( Ref ref )
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
 } // dropReference
 
@@ -121,9 +127,20 @@ void dropReference( Ref ref )
 // -----------------------------------------------------------------------------------------
 void initPool(void)
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
-  
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
+	
+	// buffer = malloc(MEMORY_SIZE)? 
+
+	// initialize these
+	head = NULL; 
+	numObjects = 0;
+	bytesInUse = 0;
+	bytesCollected = 0;
+	
+	ref = 1;
+	freePtr = 0;
+
 } // initPool
 
 // -----------------------------------------------------------------------------------------
@@ -133,9 +150,13 @@ void initPool(void)
 // -----------------------------------------------------------------------------------------
 void destroyPool(void)
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
+	// free(buffer);
+	
+	// free linked list too 
+
 } // destroyPool
 
 // -----------------------------------------------------------------------------------------
@@ -146,8 +167,8 @@ void destroyPool(void)
 // -----------------------------------------------------------------------------------------
 void dumpPool(void)
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
 } // dumpPool
 
@@ -166,8 +187,8 @@ void dumpPool(void)
 // -----------------------------------------------------------------------------------------
 static void compact(void)
 {
-  // PRECONDITIONS: 
-  // POSTCONDITIONS: 
+  	// PRECONDITIONS: 
+  	// POSTCONDITIONS: 
   
 } // compact
 
