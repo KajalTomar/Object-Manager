@@ -22,21 +22,23 @@
 // typedef unsigned long Ref;
 // typedef unsigned long ulong;
 // typedef unsigned char uchar;
-typedef Struct Node node;
 
 Struct Node 
 {
-	Node * freePtr;
+	Node * next; 
 	ulong numBytes;
-	ulong startAddr; 
+	ulong startAddress; 
 	Ref ref;
-	ulong count
+	ulong count;
 } 
 
-static uchar buffer[MEMORY_SIZE]; //???
+typedef Struct Node node;
+static uchar buffer[MEMORY_SIZE];
 
+static uchar * freePtr;
 static Node * head = NULL; 
-static ulong numObject; 
+
+static ulong numOfObject; 
 static ulong bytesInUse;
 static ulong bytesCollected; 
 
@@ -73,8 +75,60 @@ Ref insertObject(ulong size)
 {
 	// PRECONDITIONS: 
   	// POSTCONDITIONS: 
-  
-  	return NULL_REF;
+  	
+	Ref allocatedRef = NULL_REF;
+
+	node * curr = head;
+	node * newNode = malloc (sizeof(node));
+
+	if (bytesCollected + size < MEMORY_SIZE)
+	{
+		newEntry -> numBytes = size;
+		newEntry -> startAddress = freePtr;
+		newEntry -> count = 1;
+		
+		if (!head && size < MEMORY_SIZE)
+		{
+			assert(totalBytes == 0);
+		
+			newEntry -> ref = 1;
+			newEntry -> next = head;
+			head = newEntry;
+		
+			assert(head);
+		}
+		else // if at least one item (head) exists
+		{
+			// valid buffer
+		
+			// look for the next available spot
+			while (curr -> next ! NULL)
+			{
+				curr = curr -> next;
+			}		
+			
+			newEntry -> ref = (curr -> ref) + 1;
+			curr -> next = newEntry;
+			newEntry -> next = NULL;
+		
+		}
+		
+		allocatedRef = ref; 
+
+		freePtr = buffer[size];
+		
+		bytesCollected++;
+		bytesInUse++;
+		numOfObjects++;
+
+	}
+
+	printf("\nInsertItem: \n");
+	printf("Bytes collected: %ul\n", bytesCollected);
+	printf("Bytes in use: %ul\n", bytesInUse);
+	printf("Total number of objects: %ul\n", numObjectsl)11;
+
+  	return allocated_Ref;
 } // insertObject
 
 // -----------------------------------------------------------------------------------------
@@ -127,19 +181,19 @@ void dropReference( Ref ref )
 // -----------------------------------------------------------------------------------------
 void initPool(void)
 {
-  	// PRECONDITIONS: 
+  	// PRECONDITIONS: the pool doesn't exist
   	// POSTCONDITIONS: 
 	
-	// buffer = malloc(MEMORY_SIZE)? 
+	// destroy pool (just in case) 
 
 	// initialize these
-	head = NULL; 
-	numObjects = 0;
+	head = NULL;
+	numOfObjects = 0;
 	bytesInUse = 0;
 	bytesCollected = 0;
 	
 	ref = 1;
-	freePtr = 0;
+	freePtr = buffer[0];
 
 } // initPool
 
