@@ -49,6 +49,7 @@ static ulong bytesCollected;
 //-----------------------------------------------------------------------------
 
 static void compact(void);
+static * node nodeAtRef(Ref)
 static void validateBuffer(void);
 
 // -----------------------------------------------------------------------------------------------
@@ -148,36 +149,26 @@ void * retrieveObject(Ref ref)
   	// PRECONDITIONS: if the buffer exists it is valid.  
   	// POSTCONDITIONS: the buffer is still valid
   	
-	node * curr = head; // to iterate
-	bool foundRef = false;
-
+	node * foundNode;
 	uchar * objectRef = NULL_REF; // we will return this
-
-	if (curr)
-	{
-		validateBuffer();
-	}
-
-	while(curr && !foundRef)
-	{
-		// check the ref for each object against the ref
-		// we are trying to retrive.
-		if(curr -> ref == ref)
-		{
-			// they match!
-
-			objectRef = curr -> startAddress; // update return value
-			foundRef = true; // just so we don't loop needlessly
-		}
-
-		curr = curr -> next;
-	}
-
+	 
 	if(curr)
 	{
 		validateBuffer();
 	}
-
+	
+	foundNode = nodeAtRef(ref);
+	
+	if (foundNode)
+	{
+		objectRef = foundNode -> startAddress;
+	}
+	
+	if(curr)
+	{
+		validateBuffer();
+	}
+	
 	return objectRef;
 
 } // retrieveObject
@@ -313,15 +304,48 @@ static void compact(void)
 } // compact
 
 // -----------------------------------------------------------------------------------------
-// searchFor
+// nodeAtRef
 // 
-// PURPOSE: searched the nodes for the ref item. 
+// PURPOSE: searches the nodes for the ref item. 
 // INPUT: Ref to search for
-// OUTPUT: Pointer to the node that contains that ref
+// OUTPUT: Pointer to the node that contains that ref or NULL_REF if the ref does *not* exist
 // ----------------------------------------------------------------------------------------- 
-static * node searchFor(Ref ref)
+static * node nodeAtRef(Ref ref)
 {
+	// PRECONDITIONS: if the buffer exists it is valid.  
+  	// POSTCONDITIONS: the buffer is still valid
 	
+	node * curr = head; // to iterate
+	node * foundNode = NULL_REF; // to return
+	
+	bool foundRef = false;
+	
+	if (curr)
+	{
+		validateBuffer();
+	}
+
+	while(curr && !foundRef)
+	{
+		// check the ref for each object against the ref
+		// we are trying to retrive.
+		if(curr -> ref == ref)
+		{
+			// they match!
+
+			foundNode = curr; // update return value
+			foundRef = true; // just so we don't loop needlessly
+		}
+
+		curr = curr -> next;
+	}
+
+	if(curr)
+	{
+		validateBuffer();
+	}
+	
+	return foundNode;
 }
 
 // -----------------------------------------------------------------------------------------
