@@ -55,15 +55,6 @@ static void validateBuffer(void);
 // FUNCTIONS
 // -----------------------------------------------------------------------------------------------
 
-/*
- * This function trys to allocate a block of given size from our buffer.
- * It will fire the garbage collector as required.
- * We always assume that an insert always creates a new object...
- * On success it returns the reference number for the block of memory
- * allocated for the object.
- * On failure it returns NULL_REF (0)
- */
- 
 // -----------------------------------------------------------------------------------------
 // insertObject
 //
@@ -79,31 +70,32 @@ Ref insertObject(ulong size)
   	// POSTCONDITIONS: the buffer has at least one object, the buffer is valid
   	// freePtr is valid
 
-	Ref allocatedRef = NULL_REF;
+	Ref allocatedRef = NULL_REF; // for return value
 
-	node * curr = head;
-	node * newNode;
+	node * curr = head; // to iterate through the nodes
+	node * newNode; 
 	
 	newNode = (struct node *)malloc(sizeof(struct node));
 	
-	if (bytesCollected + size < MEMORY_SIZE)
+	if (bytesCollected + size < MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
 	{
+		// assign values to newNode
 		newNode -> numBytes = size;
 		newNode -> startAddress = freePtr;
-		newNode -> count = 1;
+		newNode -> count = 1; // initially 
 		
-		if (!head && size < MEMORY_SIZE)
+		if (!head && size < MEMORY_SIZE) // if no objects exist at the moment
 		{
 			assert(numOfObjects == 0);
 			assert(bytesInUse == 0);
 		
-			newNode -> ref = 1;
+			newNode -> ref = 1; // because it's the first one
 			newNode -> next = head;
 			head = newNode;
 		
 			assert(head);
 		}
-		else // if at least one item (head) exists
+		else // if at least one object (head) exists
 		{
 			validateBuffer();
 			
@@ -116,16 +108,20 @@ Ref insertObject(ulong size)
 				curr = curr -> next;
 			}		
 			
+			// update these values
 			newNode -> ref = (curr -> ref) + 1;
 			curr -> next = newNode;
 			newNode -> next = NULL;
 		
 		}
 		
-		allocatedRef = newNode -> ref; 
+		allocatedRef = newNode -> ref; // this is what we are going to return
 
-		freePtr = &buffer[size];
+		// update the preePtr to the next available spot in the buffer (or the end if the
+		// buffer if full)
+		freePtr = &buffer[size]; 
 		
+		// update stats
 		bytesInUse+= newNode -> numBytes;
 		numOfObjects++;
 
@@ -137,6 +133,7 @@ Ref insertObject(ulong size)
 	}
 
   	return allocatedRef;
+
 } // insertObject
 
 // -----------------------------------------------------------------------------------------
@@ -144,28 +141,59 @@ Ref insertObject(ulong size)
 //
 // PURPOSE: returns a pointer to the object being requested given by the reference id.
 // INPUT: The Ref for the object being requested.
-// OUTPUT: returns the start adress for the object at Ref (&buffer[startAddr] 
+// OUTPUT: returns the start adress for the object at Ref
 // -----------------------------------------------------------------------------------------
 void * retrieveObject(Ref ref)
 {
-  	// PRECONDITIONS: 
-  	// POSTCONDITIONS: 
+  	// PRECONDITIONS: if the buffer exists it is valid.  
+  	// POSTCONDITIONS: the buffer is still valid
   	
-	return freePtr;
+	node * curr = head; // to iterate
+	bool foundRef = false;
+
+	uchar * objectRef = NULL_REF; // we will return this
+
+	if (curr)
+	{
+		validateBuffer();
+	}
+
+	while(curr && !foundRef)
+	{
+		// check the ref for each object against the ref
+		// we are trying to retrive.
+		if(curr -> ref == ref)
+		{
+			// they match!
+
+			objectRef = curr -> startAddress; // update return value
+			foundRef = true; // just so we don't loop needlessly
+		}
+
+		curr = curr -> next;
+	}
+
+	if(curr)
+	{
+		validateBuffer();
+	}
+
+	return objectRef;
+
 } // retrieveObject
 
 
 // -----------------------------------------------------------------------------------------
 // addReference
 //
-// PURPOSE: update our index to indicate that we have another reference to the given object.
+// PURPOSE: update object count to indicate that we have another reference to the given object.
 // INPUT: The Ref for the given object.
 // -----------------------------------------------------------------------------------------
 void addReference( Ref ref )
 {
   	// PRECONDITIONS: 
   	// POSTCONDITIONS: 
-  
+
 } // addReference
 
 
@@ -283,6 +311,18 @@ static void compact(void)
   	// POSTCONDITIONS: 
   
 } // compact
+
+// -----------------------------------------------------------------------------------------
+// searchFor
+// 
+// PURPOSE: searched the nodes for the ref item. 
+// INPUT: Ref to search for
+// OUTPUT: Pointer to the node that contains that ref
+// ----------------------------------------------------------------------------------------- 
+static * node searchFor(Ref ref)
+{
+	
+}
 
 // -----------------------------------------------------------------------------------------
 // validateBuffer

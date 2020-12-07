@@ -43,6 +43,7 @@ int main(void)
 {
 
 	insertObjectCases();
+	retrieveObjectCases();
 
 	printf("\n\n--------------------------------------------------------------------------------------------------\n");
 	printf("TOTAL TESTS: %i: \n", totalTests);
@@ -120,8 +121,23 @@ static void retrieveObjectCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
+	printf("Retrieving object at ref 2...\n");
+	testRetrieveObject(2, true);
+
+	printf("Retrieving object at ref 3..\n");
+	testRetrieveObject(3, true);
+	
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
+	
+	printf("Retrieving object at the first ref...\n");
+	testRetrieveObject(1, true);
+
+	printf("Retrieving object at the last ref...\n");
+	testRetrieveObject(4, true);
+	
+	printf("Retrieving object at ref 7 (which doesn't exist)...\n");
+	testRetrieveObject(7, false);
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // retrieveObjectCases
@@ -202,12 +218,12 @@ static void testInsertObject(ulong size, bool expectedResult)
 {
 	bool actualResult = true;
 	Ref ref = insertObject(size); 
-
+	
 	if(ref == NULL_REF)
 	{
 		actualResult = false; 
 	}
-
+	
 	if (actualResult == expectedResult)
 	{
 		if(actualResult)
@@ -233,6 +249,8 @@ static void testInsertObject(ulong size, bool expectedResult)
 		failedTests++;
 	}
 
+	printf("\n");
+
 	totalTests++;
 
 } // testInsertObject
@@ -247,7 +265,45 @@ static void testInsertObject(ulong size, bool expectedResult)
 // -----------------------------------------------------------------------------
 static void testRetrieveObject(Ref ref, bool expectedResult)
 {
+	bool actualResult = true; 
 	
+	void * retrievedObject = retrieveObject(ref);
+
+	if (retrievedObject == NULL_REF)
+	{
+		actualResult = false;
+	}
+
+	printf("Returned address: %p\n", retrievedObject);
+
+	if (actualResult == expectedResult)
+	{
+		if(actualResult)
+		{
+			printf("Passed! The object with the ref number %lu was successfully retrieved. Return address: %p\n", ref, retrievedObject);
+		}
+		else 
+		{
+			printf("Passed! As expected, no object was retrieved. Return address: %p\n", retrievedObject);
+		}
+
+	} 
+	else // (actualResult != expectedResult)
+	{
+		if(actualResult) // (actualResult && ! expectedResult)
+		{
+			printf("FAILED: An object was retrieved but it should not have been. Return Address: %p\n", retrievedObject);
+		} 
+		else
+		{
+			printf("FAILED: The object with the ref number of %lu should have been retrieved, but it was *not*. Returned Address: %p\n", ref, retrievedObject);
+		}
+
+		failedTests++;
+	}
+	
+	totalTests++;
+
 } // testRetrieveObject
 
 // -----------------------------------------------------------------------------
