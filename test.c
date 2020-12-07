@@ -29,13 +29,15 @@ int failedTests = 0;
 static void insertObjectCases(void);
 static void retrieveObjectCases(void);
 static void addReferenceCases(void);
+//static void dropReferenceCases(void);
 //static void initPoolCases(void);
 //static void destroyPoolCases(void);
 
 // These functions test specific functions and display the result
 static void testInsertObject(ulong, bool);
 static void testRetrieveObject(Ref, bool);
-static void testAddReference(Ref, bool);
+static void testAddReference(Ref, ulong);
+//static void testDropReference(Ref, ulong);
 //static void testInitPool(bool);
 //static void testDestroyPool(void, bool);
 
@@ -44,6 +46,7 @@ int main(void)
 
 	insertObjectCases();
 	retrieveObjectCases();
+	addReferenceCases(); 
 
 	printf("\n\n--------------------------------------------------------------------------------------------------\n");
 	printf("TOTAL TESTS: %i: \n", totalTests);
@@ -121,22 +124,22 @@ static void retrieveObjectCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
-	printf("Retrieving object at ref 2...\n");
+	printf("Retrieving object at refID 2...\n");
 	testRetrieveObject(2, true);
 
-	printf("Retrieving object at ref 3..\n");
+	printf("Retrieving object at refID 3..\n");
 	testRetrieveObject(3, true);
 	
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
-	printf("Retrieving object at the first ref...\n");
+	printf("Retrieving object at the first refID...\n");
 	testRetrieveObject(1, true);
 
-	printf("Retrieving object at the last ref...\n");
+	printf("Retrieving object at the last refID...\n");
 	testRetrieveObject(4, true);
 	
-	printf("Retrieving object at ref 7 (which doesn't exist)...\n");
+	printf("Retrieving object at refID 7 (which doesn't exist)...\n");
 	testRetrieveObject(7, false);
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
@@ -156,9 +159,46 @@ static void addReferenceCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
+	printf("Adding a reference to id 2...\n");
+	testAddReference(2, 2);
+
+	printf("Adding a reference to id 2...\n");
+	testAddReference(2, 3);
+	
+	printf("Adding a reference to id 3...\n");
+	testAddReference(3, 2);
+	
+	printf("Adding a reference to id 2...\n");
+	testAddReference(2, 4);
+	
+	// drop a reference then add a reference
+
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
+	printf("Adding a reference to the first id (=1)...\n");
+	testAddReference(1, 2);
+	
+	printf("Adding a reference to the last id (=4)...\n");
+	testAddReference(4, 2);
+	
+	printf("Adding a reference to the first id (=1) again...\n");
+	testAddReference(1, 3);
+	
+	printf("Adding a reference to the last id (=4) again...\n");
+	testAddReference(4, 3);
+	
+	printf("Adding a reference to an id (=7) that doesn't exist...\n");
+	testAddReference(7, 0);
+	
+	for(int i = 5; i < 25; i++)
+	{
+		printf("Adding a another reference to id 2...\n");
+		testAddReference(2, i);		
+	}
+	
+	// drop a reference to 0 then try to add another reference
+
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // addReferenceCases
 
@@ -280,7 +320,7 @@ static void testRetrieveObject(Ref ref, bool expectedResult)
 	{
 		if(actualResult)
 		{
-			printf("Passed! The object with the ref number %lu was successfully retrieved. Return address: %p\n", ref, retrievedObject);
+			printf("Passed! The object with the id number %lu was successfully retrieved. Return address: %p\n", ref, retrievedObject);
 		}
 		else 
 		{
@@ -296,7 +336,7 @@ static void testRetrieveObject(Ref ref, bool expectedResult)
 		} 
 		else
 		{
-			printf("FAILED: The object with the ref number of %lu should have been retrieved, but it was *not*. Returned Address: %p\n", ref, retrievedObject);
+			printf("FAILED: The object with the id number of %lu should have been retrieved, but it was *not*. Returned Address: %p\n", ref, retrievedObject);
 		}
 
 		failedTests++;
@@ -314,9 +354,26 @@ static void testRetrieveObject(Ref ref, bool expectedResult)
 // INPUT: ref of the object to add another reference to, the expected result 
 // (Boolean) to compare the results with.
 // -----------------------------------------------------------------------------
-static void testAddReference(Ref ref, bool expectedResult)
+static void testAddReference(Ref id, ulong expectedRefCount)
 {
+	ulong actualCount = 0;
+
+	addReference(id);
 	
+	actualCount = getRefCount(id);
+
+	if(actualCount == expectedRefCount)
+	{
+		printf("Passed! The ref count is %lu.\n\n", actualCount);
+	}
+	else // if (actualCount != expectedCount)
+	{
+		printf("FAILED! The ref count is %lu, but it should be %lu,\n\n",actualCount, expectedRefCount);
+		failedTests++;
+	}
+
+	totalTests++;
+
 } // testAddReference
 
 // -----------------------------------------------------------------------------

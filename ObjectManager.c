@@ -30,8 +30,8 @@ struct node
 	node * next; 
 	ulong numBytes;
 	uchar * startAddress; 
-	Ref ref;
-	ulong count;
+	Ref refCount;
+	Ref id;
 }; 
 
 // typedef struct Node node;
@@ -49,9 +49,40 @@ static ulong bytesCollected;
 //-----------------------------------------------------------------------------
 
 static void compact(void);
-static * node nodeAtRef(Ref)
+static node * nodeAtID(Ref);
 static void validateBuffer(void);
 
+
+// JUST FOR TESTING
+ulong getRefCount(Ref id)
+{
+	node * foundNode = nodeAtID(id);
+	ulong count = NULL_REF;
+
+	if (foundNode != NULL_REF)
+	{
+		count = foundNode -> refCount;
+	}
+
+	return count;
+}
+
+void displayNode(Ref id)
+{
+	node * displayNode = nodeAtID(id);
+
+	if (displayNode != NULL_REF)
+	{
+		printf("ID: %lu\n", displayNode -> id);
+		printf("Ref Count: %lu\n", displayNode -> refCount);
+		printf("Number of Bytes: %lu\n", displayNode -> numBytes);
+		printf("StartAddress: %p\n\n", displayNode -> startAddress);
+	}
+	else
+	{
+		printf("This object doesn't exist.\n\n");
+	}
+}
 // -----------------------------------------------------------------------------------------------
 // FUNCTIONS
 // -----------------------------------------------------------------------------------------------
@@ -71,7 +102,7 @@ Ref insertObject(ulong size)
   	// POSTCONDITIONS: the buffer has at least one object, the buffer is valid
   	// freePtr is valid
 
-	Ref allocatedRef = NULL_REF; // for return value
+	ulong allocatedID = NULL_REF; // for return value
 
 	node * curr = head; // to iterate through the nodes
 	node * newNode; 
@@ -83,14 +114,14 @@ Ref insertObject(ulong size)
 		// assign values to newNode
 		newNode -> numBytes = size;
 		newNode -> startAddress = freePtr;
-		newNode -> count = 1; // initially 
+		newNode -> refCount = 1; // initially 
 		
 		if (!head && size < MEMORY_SIZE) // if no objects exist at the moment
 		{
 			assert(numOfObjects == 0);
 			assert(bytesInUse == 0);
 		
-			newNode -> ref = 1; // because it's the first one
+			newNode -> id = 1; // because it's the first one
 			newNode -> next = head;
 			head = newNode;
 		
@@ -110,13 +141,13 @@ Ref insertObject(ulong size)
 			}		
 			
 			// update these values
-			newNode -> ref = (curr -> ref) + 1;
+			newNode -> id = (curr -> id) + 1;
 			curr -> next = newNode;
 			newNode -> next = NULL;
 		
 		}
 		
-		allocatedRef = newNode -> ref; // this is what we are going to return
+		allocatedID = newNode -> id; // this is what we are going to return
 
 		// update the preePtr to the next available spot in the buffer (or the end if the
 		// buffer if full)
@@ -133,7 +164,7 @@ Ref insertObject(ulong size)
 		assert(freePtr != NULL);
 	}
 
-  	return allocatedRef;
+  	return allocatedID;
 
 } // insertObject
 
@@ -144,32 +175,32 @@ Ref insertObject(ulong size)
 // INPUT: The Ref for the object being requested.
 // OUTPUT: returns the start adress for the object at Ref
 // -----------------------------------------------------------------------------------------
-void * retrieveObject(Ref ref)
+void * retrieveObject(Ref id)
 {
   	// PRECONDITIONS: if the buffer exists it is valid.  
   	// POSTCONDITIONS: the buffer is still valid
   	
 	node * foundNode;
-	uchar * objectRef = NULL_REF; // we will return this
+	uchar * objectID = NULL_REF; // we will return this
 	 
-	if(curr)
+	if(numOfObjects > 0)
 	{
 		validateBuffer();
 	}
 	
-	foundNode = nodeAtRef(ref);
+	foundNode = nodeAtID(id);
 	
 	if (foundNode)
 	{
-		objectRef = foundNode -> startAddress;
+		objectID = foundNode -> startAddress;
 	}
 	
-	if(curr)
+	if(numOfObjects > 0)
 	{
 		validateBuffer();
 	}
 	
-	return objectRef;
+	return objectID;
 
 } // retrieveObject
 
@@ -180,10 +211,31 @@ void * retrieveObject(Ref ref)
 // PURPOSE: update object count to indicate that we have another reference to the given object.
 // INPUT: The Ref for the given object.
 // -----------------------------------------------------------------------------------------
-void addReference( Ref ref )
+void addReference( Ref id )
 {
-  	// PRECONDITIONS: 
-  	// POSTCONDITIONS: 
+  	// PRECONDITIONS: if the buffer exists it is valid, the count at ref is greater than 0  
+  	// POSTCONDITIONS: the buffer is still valid, the cound at ref is greater than 1
+	
+	node * IDnode = nodeAtID(id);
+
+	if (numOfObjects >= 1)
+	{
+		validateBuffer();
+	}
+
+	if (IDnode != NULL_REF)
+	{
+		assert(IDnode -> refCount  > 0 );
+
+		IDnode -> refCount ++;
+	
+		assert(IDnode -> refCount > 1);
+	}
+
+	if (numOfObjects >= 1)
+	{
+		validateBuffer();
+	}
 
 } // addReference
 
@@ -261,7 +313,7 @@ void dumpPool(void)
 		while(curr != NULL)
 		{
 		printf("-------------------------\n");
-		printf("Reference id: %lu\n", curr -> ref);
+		printf("Reference ID: %lu\n", curr -> id);
 		printf("Starting address: %p\n", curr -> startAddress);
 		printf("Size (in bytes): %lu\n", curr -> numBytes);
 		printf("-------------------------\n\n");
@@ -310,7 +362,7 @@ static void compact(void)
 // INPUT: Ref to search for
 // OUTPUT: Pointer to the node that contains that ref or NULL_REF if the ref does *not* exist
 // ----------------------------------------------------------------------------------------- 
-static * node nodeAtRef(Ref ref)
+static node * nodeAtID(Ref id)
 {
 	// PRECONDITIONS: if the buffer exists it is valid.  
   	// POSTCONDITIONS: the buffer is still valid
@@ -318,23 +370,23 @@ static * node nodeAtRef(Ref ref)
 	node * curr = head; // to iterate
 	node * foundNode = NULL_REF; // to return
 	
-	bool foundRef = false;
+	bool foundID = false;
 	
 	if (curr)
 	{
 		validateBuffer();
 	}
 
-	while(curr && !foundRef)
+	while(curr && !foundID)
 	{
 		// check the ref for each object against the ref
 		// we are trying to retrive.
-		if(curr -> ref == ref)
+		if(curr -> id == id)
 		{
 			// they match!
 
 			foundNode = curr; // update return value
-			foundRef = true; // just so we don't loop needlessly
+			foundID = true; // just so we don't loop needlessly
 		}
 
 		curr = curr -> next;
@@ -367,7 +419,7 @@ static void validateBuffer(void)
 		countBytesInUse += curr -> numBytes;
 		
 		assert(curr -> startAddress); // exists
-		assert(curr -> count >= 0); // count shouldn't drop below 1
+		assert(curr -> refCount >= 0); // count shouldn't drop below 1
 		assert(curr -> numBytes <= MEMORY_SIZE);
 		curr = curr -> next;
 	}
