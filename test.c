@@ -15,8 +15,6 @@
 //-----------------------------------------------------------------------------
 // CONSTANTS AND TYPES
 //-----------------------------------------------------------------------------
-typedef enum BOOL { false, true } bool;
-
 char *ptr;
 int i; 
 
@@ -25,18 +23,18 @@ int i;
 //-----------------------------------------------------------------------------
 
 // These functions call the test functions in order to test different general and edge cases
-static void insertCases(void);
+static void insertObjectCases(void);
 static void retrieveObjectCases(void);
 static void addReferenceCases(void);
-static void initPoolCases(void);
-static void destroyPoolCases(void);
+//static void initPoolCases(void);
+//static void destroyPoolCases(void);
 
 // These functions test specific functions and display the result
-static void testInsert(void);
-static void testRetrieveObject(void);
-static void testAddReference(void);
-static void testInitPool(void);
-static void testDestroyPool(void);
+static void testInsertObject(ulong, bool);
+static void testRetrieveObject(Ref, bool);
+static void testAddReference(Ref, bool);
+//static void testInitPool(bool);
+//static void testDestroyPool(void, bool);
 
 int main(void)
 {
@@ -61,7 +59,7 @@ int main(void)
 // PURPOSE: calls the testInsert function to test normal and edge cases for
 // the insert function.
 // -----------------------------------------------------------------------------
-static void insertCases(void)
+static void insertObjectCases(void)
 {
 	printf("----------------------------------------------------------------------------------------------------------\n");
 	printf("TESTS FOR insert()\n");
@@ -73,7 +71,7 @@ static void insertCases(void)
 	printf("Testing edge cases.\n\n");
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
-} // insertCases
+} // insertObjectCases
 
 // -----------------------------------------------------------------------------
 // retrieveObjectCases
@@ -89,8 +87,31 @@ static void retrieveObjectCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
+	printf("Inserting an object of size 100...\n");
+	testInsertObject(100, true);
+	
+	printf("Inserting an object of size 1243567...\n");
+	testInsertObject(1243567, true);
+
+	printf("Inserting an object of size 12...\n");
+	testInsertObject(12, true);
+
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
+
+	printf("Inserting an object of size 0...\n");
+	testInsertObject(0, true);
+
+	printf("inserting an object that is too big for the buffer...\n");
+	testInsertObject(MEMORY_SIZE+1, false);
+	
+	// first destroy pool
+	// printf("Inserting an object of exactly MEMORY_SIZE into an empty buffer...");
+	// testInsertObject(MEMORY_SIZE, true);
+	
+	// first destroy pool
+	// printf("Inserting an object of size 0...");
+	// testInsertObject(MEMORY_SIZE, true);
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // retrieveObjectCases
@@ -161,16 +182,47 @@ static void destroyPoolCases(void)
 // -------------------------------------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// testInsert
+// testInsertObject
 // 
 // PURPOSE: Test if the insert function creates (or or does not create) the new
 // object like we expect. Display the outcome.
 // INPUT: the size, the expected result (Boolean) to compare the results with.
 // -----------------------------------------------------------------------------
-static void testInsert(ulong size, Boolean expectedResult)
+static void testInsert(ulong size, bool expectedResult)
 {
-	
-} // testInsert
+	bool actualResult = true;
+	Ref ref = insertObject(size); 
+
+	if(ref == NULL_REF)
+	{
+		actualResult = false; 
+	}
+
+	if (actualResult == expectedResult)
+	{
+		if(actualResult)
+		{
+			printf("Passed! The object was successfully created and inserted.\n");
+		}
+		else
+		{
+			printf("Passed! As expected, the object was not inserted.\n");
+		}
+	}
+	else
+	{
+		if(actualResult) // && (!expectedResult)
+		{
+			printf("FAILED: An object got inserted even though it should *NOT* have been inserted.\n");
+		} 
+		else // (!actualResult && expectedResult) 
+		{
+			printf("FAILED: The object was *NOT* created. Something went wrong.\n");
+		}
+	}
+
+
+} // testInsertObject
 
 // -----------------------------------------------------------------------------
 // testRetrieveObject
@@ -180,7 +232,7 @@ static void testInsert(ulong size, Boolean expectedResult)
 // INPUT: the ref to retrieve the object from, the expected result (Boolean) to 
 // compare the results with.
 // -----------------------------------------------------------------------------
-static void testRetrieveObject(Ref ref, Boolean expectedResult)
+static void testRetrieveObject(Ref ref, bool expectedResult)
 {
 	
 } // testRetrieveObject
@@ -193,7 +245,7 @@ static void testRetrieveObject(Ref ref, Boolean expectedResult)
 // INPUT: ref of the object to add another reference to, the expected result 
 // (Boolean) to compare the results with.
 // -----------------------------------------------------------------------------
-static void testAddReference(Ref ref, Boolean expectedResult)
+static void testAddReference(Ref ref, bool expectedResult)
 {
 	
 } // testAddReference
@@ -206,12 +258,12 @@ static void testAddReference(Ref ref, Boolean expectedResult)
 // INPUT: ref of the object to drop the reference to, the expected result 
 // (Boolean) to compare the results with.
 // -----------------------------------------------------------------------------
-static void testDropReference(Ref red, Boolean expectedResult)
+static void testDropReference(Ref ref, bool expectedResult)
 {
 	
 } // testDropReference
 
-//***
+/***
 
 static void testInitPool()
 {
@@ -223,5 +275,5 @@ static void testDestroyPool()
 	
 } // testDestroyPool
 
-**//
+**/
 

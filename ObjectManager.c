@@ -224,13 +224,13 @@ void dumpPool(void)
   
 	node * curr = head; 
 
-	if (numOfObject > 0)
+	if (numOfObjects > 0)
 	{
-		while(curr != null)
+		while(curr != NULL)
 		{
 		printf("-------------------------\n");
 		printf("Reference id: %lu\n", curr -> ref);
-		printf("Starting address: %lu\n"curr -> startAddress);
+		printf("Starting address: %lu\n", curr -> startAddress);
 		printf("Size (in bytes): %lu\n", curr -> numBytes);
 		printf("-------------------------\n\n");
 		}
