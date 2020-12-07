@@ -127,11 +127,6 @@ Ref insertObject(ulong size)
 
 	}
 
-	printf("\nInsertItem: \n");
-	printf("Bytes collected: %lu\n", bytesCollected);
-	printf("Bytes in use: %lu\n", bytesInUse);
-	printf("Total number of objects: %lu\n", numOfObjects);
-
   	return allocatedRef;
 } // insertObject
 
@@ -227,6 +222,24 @@ void dumpPool(void)
   	// PRECONDITIONS: 
   	// POSTCONDITIONS: 
   
+	node * curr = head; 
+
+	if (numOfObject > 0)
+	{
+		while(curr != null)
+		{
+		printf("-------------------------\n");
+		printf("Reference id: %lu\n", curr -> ref);
+		printf("Starting address: %lu\n"curr -> startAddress);
+		printf("Size (in bytes): %lu\n", curr -> numBytes);
+		printf("-------------------------\n\n");
+		}
+	}
+	else
+	{
+		printf("There is nothing in the pool.\n");
+	}
+
 } // dumpPool
 
 /*  Initiate garbage collection 
