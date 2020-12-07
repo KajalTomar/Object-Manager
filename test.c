@@ -18,6 +18,9 @@
 char *ptr;
 int i; 
 
+int totalTests = 0;
+int failedTests = 0;
+
 //-----------------------------------------------------------------------------
 // PROTOTYPES
 //-----------------------------------------------------------------------------
@@ -39,11 +42,13 @@ static void testAddReference(Ref, bool);
 int main(void)
 {
 
-	initPool();
-	
-	dumpPool();
-	
-	
+	insertObjectCases();
+
+	printf("\n\n--------------------------------------------------------------------------------------------------\n");
+	printf("TOTAL TESTS: %i: \n", totalTests);
+	printf("TESTS PASSED: %i: \n", totalTests - failedTests);
+	printf("TESTS FAILED: %i: \n", failedTests);
+	printf("------------------------------------------------------------------------------------------------------\n");
 
 	printf("\nend of processing.\n");
 	return 0;	
@@ -61,6 +66,8 @@ int main(void)
 // -----------------------------------------------------------------------------
 static void insertObjectCases(void)
 {
+	initPool();
+	
 	printf("----------------------------------------------------------------------------------------------------------\n");
 	printf("TESTS FOR insert()\n");
 	
@@ -70,8 +77,8 @@ static void insertObjectCases(void)
 	printf("Inserting an object of size 100...\n");
 	testInsertObject(100, true);
 	
-	printf("Inserting an object of size 1243567...\n");
-	testInsertObject(1243567, true);
+	printf("Inserting an object of size 1234...\n");
+	testInsertObject(1234, true);
 
 	printf("Inserting an object of size 12...\n");
 	testInsertObject(12, true);
@@ -82,7 +89,7 @@ static void insertObjectCases(void)
 	printf("Inserting an object of size 0...\n");
 	testInsertObject(0, true);
 
-	printf("inserting an object that is too big for the buffer...\n");
+	printf("Inserting an object that is too big for the buffer...\n");
 	testInsertObject(MEMORY_SIZE+1, false);
 	
 	// first destroy pool
@@ -92,7 +99,10 @@ static void insertObjectCases(void)
 	// first destroy pool
 	// printf("Inserting an object of size 0...");
 	// testInsertObject(MEMORY_SIZE, true);
-	
+
+	dumpPool();
+
+	// destroy Pool
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // insertObjectCases
 
@@ -188,7 +198,7 @@ static void destroyPoolCases(void)
 // object like we expect. Display the outcome.
 // INPUT: the size, the expected result (Boolean) to compare the results with.
 // -----------------------------------------------------------------------------
-static void testInsert(ulong size, bool expectedResult)
+static void testInsertObject(ulong size, bool expectedResult)
 {
 	bool actualResult = true;
 	Ref ref = insertObject(size); 
@@ -217,10 +227,13 @@ static void testInsert(ulong size, bool expectedResult)
 		} 
 		else // (!actualResult && expectedResult) 
 		{
-			printf("FAILED: The object was *NOT* created. Something went wrong.\n");
+			printf("FAILED: The object was *NOT* created. We expected it to be created..\n");
 		}
+
+		failedTests++;
 	}
 
+	totalTests++;
 
 } // testInsertObject
 

@@ -29,7 +29,7 @@ struct node
 {
 	node * next; 
 	ulong numBytes;
-	ulong startAddress; 
+	uchar * startAddress; 
 	Ref ref;
 	ulong count;
 }; 
@@ -75,25 +75,27 @@ static void validateBuffer(void);
 // -----------------------------------------------------------------------------------------
 Ref insertObject(ulong size)
 {
-	// PRECONDITIONS: 
-  	// POSTCONDITIONS: 
-  	
+	// PRECONDITIONS: either the buffer is empty or it is a valid buffer 
+  	// POSTCONDITIONS: the buffer has at least one object, the buffer is valid
+  	// freePtr is valid
+
 	Ref allocatedRef = NULL_REF;
 
 	node * curr = head;
 	node * newNode;
 	
 	newNode = (struct node *)malloc(sizeof(struct node));
-
+	
 	if (bytesCollected + size < MEMORY_SIZE)
 	{
 		newNode -> numBytes = size;
-		newNode -> startAddress = *freePtr;
+		newNode -> startAddress = freePtr;
 		newNode -> count = 1;
 		
 		if (!head && size < MEMORY_SIZE)
 		{
-			assert(bytesCollected == 0);
+			assert(numOfObjects == 0);
+			assert(bytesInUse == 0);
 		
 			newNode -> ref = 1;
 			newNode -> next = head;
@@ -103,8 +105,11 @@ Ref insertObject(ulong size)
 		}
 		else // if at least one item (head) exists
 		{
-			// valid buffer
-		
+			validateBuffer();
+			
+			assert(numOfObjects > 0);
+			assert(bytesInUse >= 0);
+	
 			// look for the next available spot
 			while (curr -> next != NULL)
 			{
@@ -121,10 +126,14 @@ Ref insertObject(ulong size)
 
 		freePtr = &buffer[size];
 		
-		bytesCollected++;
-		bytesInUse++;
+		bytesInUse+= newNode -> numBytes;
 		numOfObjects++;
 
+		assert(numOfObjects > 0);
+		assert(bytesInUse >= 0);
+		validateBuffer();
+
+		assert(freePtr != NULL);
 	}
 
   	return allocatedRef;
@@ -224,21 +233,34 @@ void dumpPool(void)
   
 	node * curr = head; 
 
+	printf("--------------------------------------------------------------------------------\n");
+	printf("-----------------------------CURRENT POOL---------------------------------------\n");
+	printf("--------------------------------------------------------------------------------\n");
+
 	if (numOfObjects > 0)
 	{
 		while(curr != NULL)
 		{
 		printf("-------------------------\n");
 		printf("Reference id: %lu\n", curr -> ref);
-		printf("Starting address: %lu\n", curr -> startAddress);
+		printf("Starting address: %p\n", curr -> startAddress);
 		printf("Size (in bytes): %lu\n", curr -> numBytes);
 		printf("-------------------------\n\n");
+		
+		curr = curr -> next;
 		}
 	}
 	else
 	{
-		printf("There is nothing in the pool.\n");
+		printf("There is nothing in the pool.");
 	}
+	
+	printf("Number of objects: %lu\n", numOfObjects);
+	printf("Number of bytes in use %lu\n", bytesInUse);
+
+	printf("--------------------------------------------------------------------------------\n");
+	printf("-----------------------------END OF POOL----------------------------------------\n");
+	printf("--------------------------------------------------------------------------------\n\n");
 
 } // dumpPool
 
@@ -269,5 +291,33 @@ static void compact(void)
 // -----------------------------------------------------------------------------------------
 static void validateBuffer(void)
 {
+	node * curr = head;
+
+	ulong countNumOfObjs = 0;
+	ulong countBytesInUse = 0;
+	// ulong countBytesCollected = 0;
+
+	while(curr != NULL)
+	{
+		countNumOfObjs++;
+		countBytesInUse += curr -> numBytes;
+		
+		assert(curr -> startAddress); // exists
+		assert(curr -> count >= 0); // count shouldn't drop below 1
+		assert(curr -> numBytes <= MEMORY_SIZE);
+		curr = curr -> next;
+	}
+
+	assert(numOfObjects == countNumOfObjs);
+	assert(countBytesInUse == bytesInUse);
+	assert(bytesInUse <= MEMORY_SIZE);
 
 } // validateBuffer
+
+
+
+
+
+
+
+
