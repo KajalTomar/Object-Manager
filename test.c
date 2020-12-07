@@ -67,26 +67,6 @@ static void insertObjectCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
-	printf("---------------------------\n");
-	printf("Testing edge cases.\n\n");
-	
-	printf("----------------------------------------------------------------------------------------------------------\n\n");
-} // insertObjectCases
-
-// -----------------------------------------------------------------------------
-// retrieveObjectCases
-// 
-// PURPOSE: calls the testRetrieveObject function to test normal and edge cases 
-// for the retrieveObject function.
-// -----------------------------------------------------------------------------
-static void retrieveObjectCases(void)
-{
-	printf("----------------------------------------------------------------------------------------------------------\n");
-	printf("TESTS FOR retrieveObject()\n");
-	
-	printf("Testing typical cases.\n\n");
-	// test and print out the progress from the typical cases
-	
 	printf("Inserting an object of size 100...\n");
 	testInsertObject(100, true);
 	
@@ -112,6 +92,26 @@ static void retrieveObjectCases(void)
 	// first destroy pool
 	// printf("Inserting an object of size 0...");
 	// testInsertObject(MEMORY_SIZE, true);
+	
+	printf("----------------------------------------------------------------------------------------------------------\n\n");
+} // insertObjectCases
+
+// -----------------------------------------------------------------------------
+// retrieveObjectCases
+// 
+// PURPOSE: calls the testRetrieveObject function to test normal and edge cases 
+// for the retrieveObject function.
+// -----------------------------------------------------------------------------
+static void retrieveObjectCases(void)
+{
+	printf("----------------------------------------------------------------------------------------------------------\n");
+	printf("TESTS FOR retrieveObject()\n");
+	
+	printf("Testing typical cases.\n\n");
+	// test and print out the progress from the typical cases
+	
+	printf("---------------------------\n");
+	printf("Testing edge cases.\n\n");
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // retrieveObjectCases
