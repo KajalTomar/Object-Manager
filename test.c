@@ -29,7 +29,7 @@ int failedTests = 0;
 static void insertObjectCases(void);
 static void retrieveObjectCases(void);
 static void addReferenceCases(void);
-//static void dropReferenceCases(void);
+static void dropReferenceCases(void);
 //static void initPoolCases(void);
 //static void destroyPoolCases(void);
 
@@ -37,7 +37,7 @@ static void addReferenceCases(void);
 static void testInsertObject(ulong, bool);
 static void testRetrieveObject(Ref, bool);
 static void testAddReference(Ref, ulong);
-//static void testDropReference(Ref, ulong);
+static void testDropReference(Ref, ulong);
 //static void testInitPool(bool);
 //static void testDestroyPool(void, bool);
 
@@ -201,6 +201,27 @@ static void addReferenceCases(void)
 
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // addReferenceCases
+
+
+// -----------------------------------------------------------------------------
+// dropReferenceCases
+// 
+// PURPOSE: calls the testDropRef function to test normal and edge cases 
+// for the dropReference function.
+// -----------------------------------------------------------------------------
+static void dropReferenceCases(void)
+{
+	printf("----------------------------------------------------------------------------------------------------------\n");
+	printf("TESTS FOR dropReference()\n");
+	
+	printf("Testing typical cases.\n\n");
+	// test and print out the progress from the typical cases
+	
+	printf("---------------------------\n");
+	printf("Testing edge cases.\n\n");
+	
+	printf("----------------------------------------------------------------------------------------------------------\n\n");
+} //dropRefrenceCases
 
 // -----------------------------------------------------------------------------
 // initPoolCases
