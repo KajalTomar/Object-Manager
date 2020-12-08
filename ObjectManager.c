@@ -35,9 +35,13 @@ struct node
 }; 
 
 // typedef struct Node node;
-static uchar buffer[MEMORY_SIZE];
+static uchar buffer_1[MEMORY_SIZE];
+static uchar buffer_2[MEMORY_SIZE];
+
+static uchar * currentBuffer; // points to current buffer
 
 static uchar * freePtr;
+
 static node * head = NULL; 
 
 static Ref lastID; // hold the last/most recent id that was added to the linked list
@@ -57,6 +61,11 @@ static void validateBuffer(void);
 
 
 // JUST FOR TESTING
+ulong getNumOfObjects(void)
+{
+	return numOfObjects;
+}
+
 ulong getRefCount(Ref id)
 {
 	node * foundNode = nodeAtID(id);
@@ -83,7 +92,7 @@ void displayNode(Ref id)
 	}
 	else
 	{
-		printf("This object doesn't exist.\n\n");
+		printf("There is no node with the id of %lu.\n\n", id);
 	}
 }
 // -----------------------------------------------------------------------------------------------
@@ -112,19 +121,21 @@ Ref insertObject(ulong size)
 	
 	newNode = (struct node *)malloc(sizeof(struct node));
 	
-	if (bytesCollected + size < MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
+	if (bytesInUse + size <= MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
 	{
 		// assign values to newNode
 		newNode -> numBytes = size;
 		newNode -> startAddress = freePtr;
 		newNode -> refCount = 1; // initially 
 		
-		if (!head && size < MEMORY_SIZE) // if no objects exist at the moment
+		if (!head && size <= MEMORY_SIZE) // if no objects exist at the moment
 		{
 			assert(numOfObjects == 0);
 			assert(bytesInUse == 0);
 		
 			newNode -> id = 1; // because it's the first one
+			lastID = newNode -> id; 
+
 			newNode -> next = head;
 			head = newNode;
 		
@@ -252,21 +263,27 @@ void addReference( Ref id )
 // -----------------------------------------------------------------------------------------
 void dropReference( Ref id )
 {
-  	// PRECONDITIONS: 
-  	// POSTCONDITIONS: 
+  	// PRECONDITIONS: if the buffer exists, it is valid. 
+  	// POSTCONDITIONS: the buffer is still valid. 
   
 	node * IDnode = nodeAtID(id);
 
 	if(IDnode!= NULL_REF) // a node with this id exists
 	{
-		if (IDnode -> refCount <= 1)
+		validateBuffer();
+
+		if (IDnode -> refCount <= 1) // if the ref count will become zero after dropping this ref
 		{
-			IDnode -> refCount--;
-			removeNode(id);
+			removeNode(id); // remove the node from the linked list
 		}
 		else // (IDnode -> refCount > 1)
 		{
-			IDnode -> refCount--;
+			IDnode -> refCount--; 
+		}
+
+		if(numOfObjects > 0)
+		{
+			validateBuffer();
 		}
 	}
 
@@ -301,12 +318,41 @@ void initPool(void)
 // -----------------------------------------------------------------------------------------
 void destroyPool(void)
 {
-  	// PRECONDITIONS: 
-  	// POSTCONDITIONS: 
+  	// PRECONDITIONS: numOfObjects >= 0, if the buffer exists it is valid 
+  	// POSTCONDITIONS: numOfObjects == 0, bytesInUse == 0, head == NULL 
   
-	// free(buffer);
-	
-	// free linked list too 
+	node * curr = head; 
+	node * temp = NULL;
+
+	if (curr)
+	{
+		assert(head);
+		assert(numOfObjects >= 1);
+		assert(bytesInUse >= 1);
+
+		validateBuffer();
+	}
+
+	while(curr)
+	{
+		bytesInUse -= curr -> numBytes; 
+
+		temp = curr;
+		curr = curr -> next;
+		
+		free(temp); // be free!
+		temp = NULL;
+
+		numOfObjects--;
+	}
+
+	head = NULL;
+
+	assert(numOfObjects == 0);
+	assert(bytesInUse == 0);
+	assert(head == NULL);
+
+	// NOTE: we don't have to free the buffers because they were *not* dynamically allocated. 
 
 } // destroyPool
 
@@ -335,6 +381,10 @@ void dumpPool(void)
 		printf("Reference ID: %lu\n", curr -> id);
 		printf("Starting address: %p\n", curr -> startAddress);
 		printf("Size (in bytes): %lu\n", curr -> numBytes);
+		
+		// just for testing. I think this is not required. DELETE BEFORE HANDIN
+		printf("RefCount: %lu\n", curr -> refCount);
+
 		printf("-------------------------\n\n");
 		
 		curr = curr -> next;
@@ -342,7 +392,7 @@ void dumpPool(void)
 	}
 	else
 	{
-		printf("There is nothing in the pool.");
+		printf("There is nothing in the pool.\n");
 	}
 	
 	printf("Number of objects: %lu\n", numOfObjects);
@@ -371,7 +421,11 @@ static void compact(void)
 {
   	// PRECONDITIONS: 
   	// POSTCONDITIONS: 
-  
+	
+	printf("\nThe number of objects that exist: %lu\n", numOfObjects);
+	printf("The current number of bytes in use: %lu\n", bytesInUse);
+	printf("The number of bytes collected: %lu\n", bytesCollected);
+
 } // compact
 
 // -----------------------------------------------------------------------------------------
@@ -382,19 +436,31 @@ static void compact(void)
 // -----------------------------------------------------------------------------------------
 void removeNode(Ref idToDel)
 {
+  	// PRECONDITIONS: if the buffer exists then it is valid, numOfObjects >= 0  
+  	// POSTCONDITIONS: the buffer is still valid, numOfObject >= 0, if numOfObjects is more 
+	// than 0 then head still exists.
+
 	node * curr = head; 
 	node * prev = NULL;
 	node * nextNode = NULL; 
 
 	bool removed = false; 
 
-	if (numOfObjects > 0)
+	if (numOfObjects > 0) // only need to remove if at least on node exists
 	{
+
+		validateBuffer();
+		assert(numOfObjects > 0);
+		
 		if (head -> id == idToDel) // need to remove head 
 		{
-			bytesInUse -= head -> numBytes; 
+			assert(head);
+
+			bytesInUse -= head -> numBytes; // update bytes in use
 			
-			head = head -> next;
+			head -> refCount--;
+
+			head = head -> next; 
 			
 			free(curr); // be free!
 			curr = NULL;
@@ -411,6 +477,8 @@ void removeNode(Ref idToDel)
 
 				if(curr -> id == idToDel) // found the id!
 				{
+					curr -> refCount--;
+
 					nextNode = curr -> next; 
 					
 					bytesInUse -= curr -> numBytes;
@@ -426,13 +494,22 @@ void removeNode(Ref idToDel)
 			}
 		}
 
-
-		
+		// update the number of objects
 		numOfObjects--;
+		
+		assert(numOfObjects >= 0);
+
+		if(numOfObjects > 0)
+		{
+			assert(head);
+			validateBuffer();
+		}
+
 	}
 
 
 } //removeNode
+
 // -----------------------------------------------------------------------------------------
 // nodeAtID
 // 
@@ -497,7 +574,7 @@ static void validateBuffer(void)
 		countBytesInUse += curr -> numBytes;
 		
 		assert(curr -> startAddress); // exists
-		assert(curr -> refCount >= 0); // count shouldn't drop below 1
+		assert(curr -> refCount >= 1); // count shouldn't drop below 1
 		assert(curr -> numBytes <= MEMORY_SIZE);
 		curr = curr -> next;
 	}

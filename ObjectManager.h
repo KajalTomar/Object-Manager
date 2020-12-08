@@ -26,6 +26,7 @@ typedef unsigned char uchar;
 
 // only for testing 
 void displayNode(Ref ref);
+ulong getNumOfObjects(void);
 ulong getRefCount(Ref id);
 
 /*

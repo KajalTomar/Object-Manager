@@ -31,7 +31,7 @@ static void retrieveObjectCases(void);
 static void addReferenceCases(void);
 static void dropReferenceCases(void);
 //static void initPoolCases(void);
-//static void destroyPoolCases(void);
+static void destroyPoolCases(void);
 
 // These functions test specific functions and display the result
 static void testInsertObject(ulong, bool);
@@ -39,7 +39,7 @@ static void testRetrieveObject(Ref, bool);
 static void testAddReference(Ref, ulong);
 static void testDropReference(Ref, ulong);
 //static void testInitPool(bool);
-//static void testDestroyPool(void, bool);
+static void testDestroyPool(void);
 
 int main(void)
 {
@@ -47,6 +47,10 @@ int main(void)
 	insertObjectCases();
 	retrieveObjectCases();
 	addReferenceCases(); 
+	dropReferenceCases();
+	destroyPoolCases();
+
+	dumpPool();
 
 	printf("\n\n--------------------------------------------------------------------------------------------------\n");
 	printf("TOTAL TESTS: %i: \n", totalTests);
@@ -217,9 +221,45 @@ static void dropReferenceCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
+	printf("Dropping the references for id 2...\n"); 
+	
+	for(int i = 1; i < 24; i++)
+	{
+		testDropReference(2, 24 - i);
+	}
+	displayNode(2);
+
+	printf("Dropping the last reference for id 2...\n");
+	testDropReference(2, NULL_REF);
+	displayNode(2);
+
+	printf("Dropping a reference for id 3...\n");
+	testDropReference(3, 1);
+
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
+	printf("Dropping all the references for the first node on the list...\n");
+	testDropReference(1, 2);
+	testDropReference(1, 1);
+	displayNode(1);
+	
+	testDropReference(1, NULL_REF);
+	displayNode(1);
+
+
+	printf("Dropping all the references for the first node on the list...\n");
+	testDropReference(4, 2);
+	testDropReference(4, 1);
+	displayNode(4);
+
+	testDropReference(4, NULL_REF);
+	displayNode(4);
+
+	printf("Dropping the only refrence of ID 3 (the single node left on the list)...\n");
+	testDropReference(3, NULL_REF);
+	displayNode(3);
+
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } //dropRefrenceCases
 
@@ -258,8 +298,49 @@ static void destroyPoolCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
+	// adding objects to create a typical pool
+	insertObject(100);
+	insertObject(5);
+	insertObject(2);
+	insertObject(55);
+	insertObject(1);
+	
+	addReference(2);
+	addReference(2);
+	addReference(3);
+	addReference(1);
+
+	printf("This is the pool we are going to destroy...\n");
+	dumpPool();
+
+	printf("Destroying pool...\n");
+	testDestroyPool();
+
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
+	
+	initPool();
+	insertObject(34);
+
+	printf("Destroying a pool with only on object...\n");
+	dumpPool();
+	testDestroyPool();
+
+
+	initPool();
+	insertObject(1);
+
+	printf("Destroying a pool with only one object of size 1...\n");
+	dumpPool();
+	testDestroyPool();
+	
+	initPool();
+	insertObject(MEMORY_SIZE);
+	
+	printf("Destroying a pool with only one object of the max memory size...\n");
+	dumpPool();
+	testDestroyPool();
+	
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // destroyPoolCases
@@ -405,9 +486,41 @@ static void testAddReference(Ref id, ulong expectedRefCount)
 // INPUT: ref of the object to drop the reference to, the expected result 
 // (Boolean) to compare the results with.
 // -----------------------------------------------------------------------------
-static void testDropReference(Ref ref, bool expectedResult)
+static void testDropReference(Ref id, Ref expectedRefCount)
 {
-	
+	Ref actualRefCount;
+
+	dropReference(id);
+
+	actualRefCount = getRefCount(id); 
+
+	if(actualRefCount == expectedRefCount)
+	{
+		if (actualRefCount == NULL_REF)
+		{
+			printf("Passed! The object had 0 refCounts after dropping this one so it was deleted from the list.\n");
+		}
+		else
+		{
+			printf("Passed! As expected, exactly one reference was dropped.\n");
+		}
+	}
+	else
+	{
+		if(actualRefCount == NULL_REF)
+		{
+			printf("FAILED: We didn't expect the ref count to become zero, but it did and that node was removed from the list.\n");		
+		}
+		else
+		{
+			printf("FAILED: We expected the ref count to become zero and for the node to be deleted but it was *not*.\n");
+		}
+
+		failedTests++;
+	}
+
+	totalTests++;
+
 } // testDropReference
 
 /***
@@ -417,10 +530,29 @@ static void testInitPool()
 	
 } // testInitPool
 
+**/
+
 static void testDestroyPool()
 {
+	ulong objectsLeft; 
+
+	destroyPool();
 	
+	objectsLeft = getNumOfObjects();
+
+	if(objectsLeft == 0)
+	{
+		printf("PASSED! The pool is empty.\n");
+	}
+	else
+	{
+		printf("Failed: There are still %lu objects left in the pool.\n", objectsLeft);
+		failedTests++;
+	}
+
+	totalTests++;
+
 } // testDestroyPool
 
-**/
+
 
