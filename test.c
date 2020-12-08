@@ -76,21 +76,6 @@ static void insertObjectCases(void)
 {
 	initPool();
 	
-	printf("----------------------------------------------------------------------------------------------------------\n");
-	printf("TESTS FOR insert()\n");
-	
-	printf("Testing typical cases.\n\n");
-	// test and print out the progress from the typical cases
-	
-	printf("Inserting an object of size 100...\n");
-	testInsertObject(100, true);
-	
-	printf("Inserting an object of size 1234...\n");
-	testInsertObject(1234, true);
-
-	printf("Inserting an object of size 12...\n");
-	testInsertObject(12, true);
-
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 
@@ -109,6 +94,24 @@ static void insertObjectCases(void)
 	initPool();
 	printf("Inserting an object of size 0...");
 	testInsertObject(MEMORY_SIZE, true);
+	
+	printf("----------------------------------------------------------------------------------------------------------\n");
+	printf("TESTS FOR insert()\n");
+	
+	printf("Testing typical cases.\n\n");
+	// test and print out the progress from the typical cases
+	
+	initPool();
+	
+	printf("Inserting an object of size 100...\n");
+	testInsertObject(100, true);
+	
+	printf("Inserting an object of size 1234...\n");
+	testInsertObject(1234, true);
+
+	printf("Inserting an object of size 12...\n");
+	testInsertObject(12, true);
+
 
 	dumpPool();
 
