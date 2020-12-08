@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
   // added by me ^
   printf("id1 = %lu\n", id1);
-/*  ptr = (char*)retrieveObject(id1);
+  ptr = (char*)retrieveObject(id1);
   for (i = 0; i < 100; i++)
     ptr[i] = (char)(i%26 + 'A');
   
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   fprintf(stdout,"\n");
   
   dumpPool();
-  destroyPool(); */
+  destroyPool(); 
   fprintf(stdout,"---\n");
   return 0;
 

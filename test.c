@@ -41,15 +41,19 @@ static void testDropReference(Ref, ulong);
 //static void testInitPool(bool);
 static void testDestroyPool(void);
 
+static void testCompact(void);
+
 int main(void)
 {
+
+	testNoMem();
 
 	insertObjectCases();
 	retrieveObjectCases();
 	addReferenceCases(); 
 	dropReferenceCases();
 	destroyPoolCases();
-
+	
 	dumpPool();
 
 	printf("\n\n--------------------------------------------------------------------------------------------------\n");
@@ -58,9 +62,29 @@ int main(void)
 	printf("TESTS FAILED: %i: \n", failedTests);
 	printf("------------------------------------------------------------------------------------------------------\n");
 
+
 	printf("\nend of processing.\n");
 	return 0;	
 } // main
+
+static void testCompact(void)
+{
+	destroyPool();
+	initPool();
+	
+	insertObject(131072);
+	insertObject(131072);
+	insertObject(2);
+	insertObject(131070);
+	insertObject(131072);
+	insertObject(0);
+	insertObject(2);
+	insertObject(323254674);
+	
+	dumpPool();
+
+	destroyPool();
+}
 
 // -------------------------------------------------------------------------------------------------------
 // FUNCTIONS THAT CALL THE TEST FUNCIONS TO TEST TYPICAL AND EDGE CASES
@@ -87,13 +111,10 @@ static void insertObjectCases(void)
 	
 	destroyPool();
 	initPool();
- 	printf("Inserting an object of exactly MEMORY_SIZE into an empty buffer...");
+ 	printf("Inserting an object of exactly MEMORY_SIZE into an empty buffer...\n");
 	testInsertObject(MEMORY_SIZE, true);
 	
 	destroyPool();
-	initPool();
-	printf("Inserting an object of size 0...");
-	testInsertObject(MEMORY_SIZE, true);
 	
 	printf("----------------------------------------------------------------------------------------------------------\n");
 	printf("TESTS FOR insert()\n");
@@ -112,6 +133,7 @@ static void insertObjectCases(void)
 	printf("Inserting an object of size 12...\n");
 	testInsertObject(12, true);
 
+	insertObject(0);
 
 	dumpPool();
 
@@ -243,7 +265,9 @@ static void dropReferenceCases(void)
 
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
-	
+
+	dumpPool();
+
 	printf("Dropping all the references for the first node on the list...\n");
 	testDropReference(1, 2);
 	testDropReference(1, 1);
@@ -558,6 +582,5 @@ static void testDestroyPool()
 	totalTests++;
 
 } // testDestroyPool
-
 
 

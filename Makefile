@@ -1,5 +1,5 @@
-test: ObjectManager.h ObjectManager.o test.c
-	clang++ -Wall test.c ObjectManager.o -o test
+main: ObjectManager.h ObjectManager.o main.c
+	clang++ -Wall main.c ObjectManager.o -o main
 
 ObjectManager.o: ObjectManager.c ObjectManager.h
 	clang++ -Wall -c ObjectManager.c -o ObjectManager.o

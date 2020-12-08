@@ -40,7 +40,7 @@ static uchar buffer_2[MEMORY_SIZE];
 
 static uchar * currentBuffer; // points to current buffer
 
-static uchar * freePtr = buffer_1;
+static uchar * freePtr;
 
 static node * head = NULL; 
 
@@ -122,24 +122,21 @@ Ref insertObject(ulong size)
 	
 	newNode = (struct node *)malloc(sizeof(struct node));
 	
-	if(noMem(size, freePtr, buffer_1))
+	if(noMem(size, freePtr, currentBuffer))
 	{
-		printf("too big for the buffer.\n");
-	}
-	else
-	{
-		printf("Will fit in the buffer.\n");
+		compact();
 	}
 	
-	if (bytesInUse + size <= MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
+	if (bytesInUse + size <= MEMORY_SIZE && size != 0) // if we can fit this size into the buffer then insert it!
 	{
 		// assign values to newNode
 		newNode -> numBytes = size;
-		newNode -> startAddress = freePtr;
 		newNode -> refCount = 1; // initially 
 		
 		if (!head && size <= MEMORY_SIZE) // if no objects exist at the moment
-		{
+		{	
+			newNode -> startAddress = freePtr;
+
 			assert(numOfObjects == 0);
 			assert(bytesInUse == 0);
 		
@@ -165,18 +162,19 @@ Ref insertObject(ulong size)
 			}		
 			
 			// update these values
+			newNode -> startAddress = freePtr;
 			newNode -> id = lastID + 1;
 			lastID = newNode -> id;
 			curr -> next = newNode;
 			newNode -> next = NULL;
-		
+				
 		}
 		
-		allocatedID = newNode -> id; // this is what we are going to return
-
-		// update the preePtr to the next available spot in the buffer (or the end if the
+		// update the freePtr to the next available spot in the buffer (or the end if the
 		// buffer if full)
-		freePtr = &buffer_1[size]; 
+		freePtr = freePtr + size;
+
+		allocatedID = newNode -> id; // this is what we are going to return
 		
 		// update stats
 		bytesInUse+= newNode -> numBytes;
@@ -317,7 +315,8 @@ void initPool(void)
 	bytesInUse = 0;
 	bytesCollected = 0;
 	
-	freePtr = &buffer_1[0];
+	currentBuffer = buffer_1;
+	freePtr = currentBuffer;
 
 } // initPool
 
@@ -338,7 +337,7 @@ void destroyPool(void)
 	{
 		assert(head);
 		assert(numOfObjects >= 1);
-		assert(bytesInUse >= 1);
+		assert(bytesInUse >= 0);
 
 		validateBuffer();
 	}
@@ -432,6 +431,27 @@ static void compact(void)
   	// PRECONDITIONS: 
   	// POSTCONDITIONS: 
 	
+	node * curr = head;
+
+	if(currentBuffer == buffer_1)
+	{
+		currentBuffer = buffer_2;
+	}
+	else
+	{
+		currentBuffer = buffer_1;
+	}
+	
+	freePtr = currentBuffer;
+	
+	while(curr)
+	{
+		curr -> startAddress = freePtr;
+		freePtr += curr -> numBytes;
+		bytesCollected += curr -> numBytes;
+		curr = curr -> next;
+	}
+
 	printf("\nThe number of objects that exist: %lu\n", numOfObjects);
 	printf("The current number of bytes in use: %lu\n", bytesInUse);
 	printf("The number of bytes collected: %lu\n", bytesCollected);
@@ -449,7 +469,7 @@ bool noMem(ulong size, uchar * freePtr, uchar * buffer)
 {
 	bool noMem = false;
 
-	if((freePtr + size) > (buffer + MEMORY_SIZE))
+	if((freePtr + size) > &(buffer[MEMORY_SIZE-1]))
 	{
 		noMem = true;
 	}
