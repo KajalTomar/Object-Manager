@@ -40,7 +40,7 @@ static uchar buffer_2[MEMORY_SIZE];
 
 static uchar * currentBuffer; // points to current buffer
 
-static uchar * freePtr;
+static uchar * freePtr = buffer_1;
 
 static node * head = NULL; 
 
@@ -55,6 +55,7 @@ static ulong bytesCollected;
 //-----------------------------------------------------------------------------
 
 static void compact(void);
+bool noMem(ulong, uchar *, uchar *);
 static void removeNode(Ref);
 static node * nodeAtID(Ref);
 static void validateBuffer(void);
@@ -121,6 +122,15 @@ Ref insertObject(ulong size)
 	
 	newNode = (struct node *)malloc(sizeof(struct node));
 	
+	if(noMem(size, freePtr, buffer_1))
+	{
+		printf("too big for the buffer.\n");
+	}
+	else
+	{
+		printf("Will fit in the buffer.\n");
+	}
+	
 	if (bytesInUse + size <= MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
 	{
 		// assign values to newNode
@@ -166,7 +176,7 @@ Ref insertObject(ulong size)
 
 		// update the preePtr to the next available spot in the buffer (or the end if the
 		// buffer if full)
-		freePtr = &buffer[size]; 
+		freePtr = &buffer_1[size]; 
 		
 		// update stats
 		bytesInUse+= newNode -> numBytes;
@@ -307,7 +317,7 @@ void initPool(void)
 	bytesInUse = 0;
 	bytesCollected = 0;
 	
-	freePtr = &buffer[0];
+	freePtr = &buffer_1[0];
 
 } // initPool
 
@@ -427,6 +437,25 @@ static void compact(void)
 	printf("The number of bytes collected: %lu\n", bytesCollected);
 
 } // compact
+
+// -----------------------------------------------------------------------------------------
+// noMem
+// 
+// PURPOSE: To check if we have run out of memory for the current buffer.
+// INPUT: pointer to current buffer
+// OUTPUT: returns bool. True for we have run out of memory and false when we have not. 
+// -----------------------------------------------------------------------------------------
+bool noMem(ulong size, uchar * freePtr, uchar * buffer)
+{
+	bool noMem = false;
+
+	if((freePtr + size) > (buffer + MEMORY_SIZE))
+	{
+		noMem = true;
+	}
+
+	return noMem;
+} // noMem
 
 // -----------------------------------------------------------------------------------------
 // removeNode

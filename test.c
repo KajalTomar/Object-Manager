@@ -100,13 +100,15 @@ static void insertObjectCases(void)
 	printf("Inserting an object that is too big for the buffer...\n");
 	testInsertObject(MEMORY_SIZE+1, false);
 	
-	// first destroy pool
-	// printf("Inserting an object of exactly MEMORY_SIZE into an empty buffer...");
-	// testInsertObject(MEMORY_SIZE, true);
+	destroyPool();
+	initPool();
+ 	printf("Inserting an object of exactly MEMORY_SIZE into an empty buffer...");
+	testInsertObject(MEMORY_SIZE, true);
 	
-	// first destroy pool
-	// printf("Inserting an object of size 0...");
-	// testInsertObject(MEMORY_SIZE, true);
+	destroyPool();
+	initPool();
+	printf("Inserting an object of size 0...");
+	testInsertObject(MEMORY_SIZE, true);
 
 	dumpPool();
 
