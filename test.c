@@ -30,29 +30,28 @@ static void insertObjectCases(void);
 static void retrieveObjectCases(void);
 static void addReferenceCases(void);
 static void dropReferenceCases(void);
-//static void initPoolCases(void);
 static void destroyPoolCases(void);
+static void compactCases(void);
 
 // These functions test specific functions and display the result
 static void testInsertObject(ulong, bool);
 static void testRetrieveObject(Ref, bool);
 static void testAddReference(Ref, ulong);
 static void testDropReference(Ref, ulong);
-//static void testInitPool(bool);
 static void testDestroyPool(void);
-
 static void testCompact(void);
 
 int main(void)
 {
 
-	testNoMem();
+
 
 	insertObjectCases();
 	retrieveObjectCases();
 	addReferenceCases(); 
 	dropReferenceCases();
 	destroyPoolCases();
+	compactCases();
 	
 	dumpPool();
 
@@ -67,23 +66,32 @@ int main(void)
 	return 0;	
 } // main
 
-static void testCompact(void)
+static void compactCases(void)
 {
+	printf("----------------------------------------------------------------------------------------------------------\n");
+	printf("TESTS FOR insert()\n");
+	
+	printf("Testing typical cases.\n\n");
+	// test and print out the progress from the typical cases
+	
+	// inserting items and removing until we need two buffers.
 	destroyPool();
 	initPool();
 	
 	insertObject(131072);
 	insertObject(131072);
-	insertObject(2);
-	insertObject(131070);
 	insertObject(131072);
-	insertObject(0);
-	insertObject(2);
-	insertObject(323254674);
+	insertObject(131072);
+
+	
+	printf("---------------------------\n");
+	printf("Testing edge cases.\n\n");
 	
 	dumpPool();
 
 	destroyPool();
+	
+	printf("----------------------------------------------------------------------------------------------------------\n\n");
 }
 
 // -------------------------------------------------------------------------------------------------------
@@ -137,7 +145,6 @@ static void insertObjectCases(void)
 
 	dumpPool();
 
-	// destroy Pool
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // insertObjectCases
 
@@ -552,15 +559,12 @@ static void testDropReference(Ref id, Ref expectedRefCount)
 
 } // testDropReference
 
-/***
 
-static void testInitPool()
-{
-	
-} // testInitPool
-
-**/
-
+// -----------------------------------------------------------------------------
+// testDestroyPool
+// 
+// PURPOSE: Test if the destroyPool function correctly destroys the pool.
+// -----------------------------------------------------------------------------
 static void testDestroyPool()
 {
 	ulong objectsLeft; 
@@ -583,4 +587,14 @@ static void testDestroyPool()
 
 } // testDestroyPool
 
+// -----------------------------------------------------------------------------
+// compact
+// 
+// PURPOSE: Test if the compact function correctly destroys uses the two buffers
+// as necessary. Then print the results.
+// -----------------------------------------------------------------------------
+static void testCompact()
+{
+	
+}
 
