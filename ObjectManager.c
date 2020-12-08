@@ -40,6 +40,8 @@ static uchar buffer[MEMORY_SIZE];
 static uchar * freePtr;
 static node * head = NULL; 
 
+static Ref lastID; // hold the last/most recent id that was added to the linked list
+
 static ulong numOfObjects; 
 static ulong bytesInUse;
 static ulong bytesCollected; 
@@ -49,6 +51,7 @@ static ulong bytesCollected;
 //-----------------------------------------------------------------------------
 
 static void compact(void);
+static void removeNode(Ref);
 static node * nodeAtID(Ref);
 static void validateBuffer(void);
 
@@ -141,7 +144,8 @@ Ref insertObject(ulong size)
 			}		
 			
 			// update these values
-			newNode -> id = (curr -> id) + 1;
+			newNode -> id = lastID + 1;
+			lastID = newNode -> id;
 			curr -> next = newNode;
 			newNode -> next = NULL;
 		
@@ -223,10 +227,10 @@ void addReference( Ref id )
 		validateBuffer();
 	}
 
-	if (IDnode != NULL_REF)
+	if (IDnode != NULL_REF) // a node with this id exists
 	{
 		assert(IDnode -> refCount  > 0 );
-
+	
 		IDnode -> refCount ++;
 	
 		assert(IDnode -> refCount > 1);
@@ -246,11 +250,26 @@ void addReference( Ref id )
 // PURPOSE: update our index to indicate that a reference is gone.
 // INPUT: The Ref for the given object.
 // -----------------------------------------------------------------------------------------
-void dropReference( Ref ref )
+void dropReference( Ref id )
 {
   	// PRECONDITIONS: 
   	// POSTCONDITIONS: 
   
+	node * IDnode = nodeAtID(id);
+
+	if(IDnode!= NULL_REF) // a node with this id exists
+	{
+		if (IDnode -> refCount <= 1)
+		{
+			IDnode -> refCount--;
+			removeNode(id);
+		}
+		else // (IDnode -> refCount > 1)
+		{
+			IDnode -> refCount--;
+		}
+	}
+
 } // dropReference
 
 // -----------------------------------------------------------------------------------------
@@ -356,7 +375,66 @@ static void compact(void)
 } // compact
 
 // -----------------------------------------------------------------------------------------
-// nodeAtRef
+// removeNode
+//
+// PURPOSE: removes a node from the linked list
+// INPUT: the id of the node to remove
+// -----------------------------------------------------------------------------------------
+void removeNode(Ref idToDel)
+{
+	node * curr = head; 
+	node * prev = NULL;
+	node * nextNode = NULL; 
+
+	bool removed = false; 
+
+	if (numOfObjects > 0)
+	{
+		if (head -> id == idToDel) // need to remove head 
+		{
+			bytesInUse -= head -> numBytes; 
+			
+			head = head -> next;
+			
+			free(curr); // be free!
+			curr = NULL;
+			
+			removed = true;
+		}
+		else // node to be removed isn't the head node 
+		{
+			while (curr && !removed) // loop until end of linked list or until we find the id
+			{
+		
+				prev = curr; 
+				curr = curr -> next;
+
+				if(curr -> id == idToDel) // found the id!
+				{
+					nextNode = curr -> next; 
+					
+					bytesInUse -= curr -> numBytes;
+
+					free(curr); // free the memory!
+					curr = NULL;
+						
+					// update pointers to exclude the node we want to remove
+					prev -> next = nextNode;
+						
+					removed = true;
+				}
+			}
+		}
+
+
+		
+		numOfObjects--;
+	}
+
+
+} //removeNode
+// -----------------------------------------------------------------------------------------
+// nodeAtID
 // 
 // PURPOSE: searches the nodes for the ref item. 
 // INPUT: Ref to search for
