@@ -31,7 +31,6 @@ static void retrieveObjectCases(void);
 static void addReferenceCases(void);
 static void dropReferenceCases(void);
 static void destroyPoolCases(void);
-static void compactCases(void);
 
 // These functions test specific functions and display the result
 static void testInsertObject(ulong, bool);
@@ -65,34 +64,6 @@ int main(void)
 	printf("\nend of processing.\n");
 	return 0;	
 } // main
-
-static void compactCases(void)
-{
-	printf("----------------------------------------------------------------------------------------------------------\n");
-	printf("TESTS FOR compact()\n");
-	
-	printf("Testing typical cases.\n\n");
-	// test and print out the progress from the typical cases
-	
-	// inserting items and removing until we need two buffers.
-	destroyPool();
-	initPool();
-	
-	insertObject(131072);
-	insertObject(131072);
-	insertObject(131072);
-	insertObject(131072);
-	
-
-	printf("---------------------------\n");
-	printf("Testing edge cases.\n\n");
-	
-	dumpPool();
-
-	destroyPool();
-	
-	printf("----------------------------------------------------------------------------------------------------------\n\n");
-} // compactCases
 
 // -------------------------------------------------------------------------------------------------------
 // FUNCTIONS THAT CALL THE TEST FUNCIONS TO TEST TYPICAL AND EDGE CASES
@@ -303,28 +274,6 @@ static void dropReferenceCases(void)
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } //dropRefrenceCases
 
-// -----------------------------------------------------------------------------
-// initPoolCases
-// 
-// PURPOSE: calls the testInitPool function to test normal and edge cases 
-// for the initPool function.
-// -----------------------------------------------------------------------------
-static void initPoolCases(void)
-{
-	printf("----------------------------------------------------------------------------------------------------------\n");
-	printf("TESTS FOR initPool()\n");
-	
-	printf("Testing typical cases.\n\n");
-	// test and print out the progress from the typical cases
-	
-	printf("---------------------------\n");
-	printf("Testing edge cases.\n\n");
-	
-	printf("----------------------------------------------------------------------------------------------------------\n\n");
-
-} // initPoolCases
-
-// -----------------------------------------------------------------------------
 // destroyPoolCases
 // 
 // PURPOSE: calls the destroyPoolCases function to test normal and edge cases 

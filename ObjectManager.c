@@ -5,8 +5,9 @@
 // INSTRUCTOR: Dr. Mehdi Niknam
 // ASSIGNMENT: 4, QUESTION: 1
 // 
-// REMARKS: This is an implementaiont of an object manager. The clients will call 
-// the functions avaliable in the interface to allocate and retrieve memory. 
+// REMARKS: This is an implemention of mark and sweek defragmenting / Mark-compact
+// garbage collector. The clients will call functions avaliable in the interface 
+// to allocate and retrieve memory. 
 // This memory manager will automatically clean up unused memory.  
 //-------------------------------------------------------------------------------
 
@@ -41,9 +42,9 @@ static ulong numOfObjects;
 static ulong bytesInUse;
 static ulong bytesCollected; 
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // PROTOTYPES
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 static void compact(void);
 bool noMemoryLeft(ulong, uchar *, uchar *);
@@ -401,9 +402,7 @@ void dumpPool(void)
   
 	node * curr = head; // to traverse the linked list
 
-	printf("--------------------------------------------------------------------------------\n");
-	printf("-----------------------------CURRENT POOL---------------------------------------\n");
-	printf("--------------------------------------------------------------------------------\n");
+	printf("\n-----------------------------CURRENT POOL---------------------------------------\n");
 
 	if (numOfObjects > 0)
 	{
@@ -415,11 +414,8 @@ void dumpPool(void)
 
 		printf("Reference ID: %lu | ", curr -> id);
 		printf("Starting address: %p | ", curr -> startAddress);
-		printf("Size (in bytes): %lu | ", curr -> numBytes);
+		printf("Size (in bytes): %lu\n", curr -> numBytes);
 		
-		// just for testing. I think this is not required. DELETE BEFORE HANDIN
-		printf("RefCount: %lu\n", curr -> refCount);
-
 		curr = curr -> next;
 		}
 
@@ -434,11 +430,9 @@ void dumpPool(void)
 	assert(bytesInUse >= 0);
 
 	printf("\nNumber of objects: %lu\n", numOfObjects);
-	printf("Number of bytes in use %lu\n", bytesInUse);
+	printf("Number of bytes in use: %lu\n", bytesInUse);
 
-	printf("--------------------------------------------------------------------------------\n");
-	printf("-----------------------------END OF POOL----------------------------------------\n");
-	printf("--------------------------------------------------------------------------------\n\n");
+	printf("-----------------------------END OF POOL----------------------------------------\n\n");
 }
 // -----------------------------------------------------------------------------------------
 // compact
