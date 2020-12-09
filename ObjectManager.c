@@ -49,7 +49,7 @@ static void compact(void);
 bool noMemoryLeft(ulong, uchar *, uchar *);
 static void removeNode(Ref);
 static node * nodeAtID(Ref);
-static void validateBuffer(void);
+static void validateBufferAndPool(void);
 
 
 // JUST FOR TESTING
@@ -141,7 +141,7 @@ Ref insertObject(ulong size)
 		}
 		else // if at least one object (head) exists
 		{
-			validateBuffer();
+			validateBufferAndPool();
 			
 			assert(numOfObjects > 0);
 			assert(bytesInUse >= 0);
@@ -178,7 +178,7 @@ Ref insertObject(ulong size)
 
 		assert(numOfObjects > 0);
 		assert(bytesInUse >= 0);
-		validateBuffer();
+		validateBufferAndPool();
 
 		assert(freePtr != NULL);
 	}
@@ -204,7 +204,7 @@ void * retrieveObject(Ref id)
 	 
 	if(numOfObjects > 0)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 	
 	// returns NULL_REF if no objecy with this id exists on the linked list
@@ -218,7 +218,7 @@ void * retrieveObject(Ref id)
 	
 	if(numOfObjects > 0)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 	
 	return objectID;
@@ -244,7 +244,7 @@ void addReference( Ref id )
 
 	if (numOfObjects >= 1)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 
 	if (IDnode != NULL_REF) // a node with this id exists
@@ -259,7 +259,7 @@ void addReference( Ref id )
 
 	if (numOfObjects >= 1)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 
 } // addReference
@@ -283,7 +283,7 @@ void dropReference( Ref id )
 
 	if(IDnode!= NULL_REF) // a node with this id exists
 	{
-		validateBuffer();
+		validateBufferAndPool();
 
 		if (IDnode -> refCount <= 1) // if the ref count will become zero after dropping this ref
 		{
@@ -303,7 +303,7 @@ void dropReference( Ref id )
 
 		if(numOfObjects > 0)
 		{
-			validateBuffer();
+			validateBufferAndPool();
 		}
 	}
 
@@ -359,7 +359,7 @@ void destroyPool(void)
 		assert(numOfObjects >= 1);
 		assert(bytesInUse >= 0);
 
-		validateBuffer();
+		validateBufferAndPool();
 	}
 
 	// go through each node in the linked list
@@ -407,7 +407,7 @@ void dumpPool(void)
 
 	if (numOfObjects > 0)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 
 		// go through each node until we get to the end
 		while(curr != NULL)
@@ -423,7 +423,7 @@ void dumpPool(void)
 		curr = curr -> next;
 		}
 
-		validateBuffer();
+		validateBufferAndPool();
 	}
 	else // (if numOfObjects == 0)
 	{
@@ -456,7 +456,7 @@ static void compact(void)
 	node * curr = head;
 	bytesCollected = 0; // reset 
 
-	validateBuffer();
+	validateBufferAndPool();
 
 	assert(numOfObjects > 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
 
@@ -492,7 +492,7 @@ static void compact(void)
 	}
 
 	// make sure the pool is still valid
-	validateBuffer();
+	validateBufferAndPool();
 
 	assert(numOfObjects > 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
 	
@@ -526,7 +526,7 @@ bool noMemoryLeft(ulong size, uchar * freePtr, uchar * buffer)
 
 	if(numOfObjects > 0)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 
 	// if adding an object of this size with point the freePtr outside the 
@@ -540,7 +540,7 @@ bool noMemoryLeft(ulong size, uchar * freePtr, uchar * buffer)
 
 	if(numOfObjects > 0)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 	
 	return noMemoryLeft;
@@ -567,7 +567,7 @@ void removeNode(Ref idToDel)
 	if (numOfObjects > 0) // only need to remove if at least on node exists
 	{
 
-		validateBuffer();
+		validateBufferAndPool();
 		assert(numOfObjects > 0);
 		
 		if (head -> id == idToDel) // need to remove head 
@@ -620,7 +620,7 @@ void removeNode(Ref idToDel)
 		if(numOfObjects > 0)
 		{
 			assert(head);
-			validateBuffer();
+			validateBufferAndPool();
 		}
 
 	}
@@ -647,7 +647,7 @@ static node * nodeAtID(Ref id)
 	
 	if (curr)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 
 	// go therough the entire linked list or until we find an object with this id
@@ -667,18 +667,18 @@ static node * nodeAtID(Ref id)
 
 	if(curr)
 	{
-		validateBuffer();
+		validateBufferAndPool();
 	}
 	
 	return foundNode;
 }
 
 // -----------------------------------------------------------------------------------------
-// validateBuffer
+// validateBufferAndPool
 //
 // PURPOSE: validates the buffer (and also the pool). 
 // -----------------------------------------------------------------------------------------
-static void validateBuffer(void)
+static void validateBufferAndPool(void)
 {
 	node * curr = head;
 
@@ -715,7 +715,7 @@ static void validateBuffer(void)
 	
 	assert(bytesInUse <= MEMORY_SIZE);
 
-} // validateBuffer
+} // validateBufferAndPool
 
 
 
