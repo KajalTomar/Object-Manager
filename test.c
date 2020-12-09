@@ -51,8 +51,8 @@ int main(void)
 	addReferenceCases(); 
 	dropReferenceCases();
 	destroyPoolCases();
-	compactCases();
-	
+	testCompact(); 
+
 	dumpPool();
 
 	printf("\n\n--------------------------------------------------------------------------------------------------\n");
@@ -69,7 +69,7 @@ int main(void)
 static void compactCases(void)
 {
 	printf("----------------------------------------------------------------------------------------------------------\n");
-	printf("TESTS FOR insert()\n");
+	printf("TESTS FOR compact()\n");
 	
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
@@ -82,8 +82,8 @@ static void compactCases(void)
 	insertObject(131072);
 	insertObject(131072);
 	insertObject(131072);
-
 	
+
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
@@ -92,7 +92,7 @@ static void compactCases(void)
 	destroyPool();
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
-}
+} // compactCases
 
 // -------------------------------------------------------------------------------------------------------
 // FUNCTIONS THAT CALL THE TEST FUNCIONS TO TEST TYPICAL AND EDGE CASES
@@ -106,13 +106,14 @@ static void compactCases(void)
 // -----------------------------------------------------------------------------
 static void insertObjectCases(void)
 {
+	destroyPool();
 	initPool();
 	
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 
-	printf("Inserting an object of size 0...\n");
-	testInsertObject(0, true);
+	printf("Inserting an object of size 5...\n");
+	testInsertObject(5, true);
 
 	printf("Inserting an object that is too big for the buffer...\n");
 	testInsertObject(MEMORY_SIZE+1, false);
@@ -141,7 +142,10 @@ static void insertObjectCases(void)
 	printf("Inserting an object of size 12...\n");
 	testInsertObject(12, true);
 
-	insertObject(0);
+	printf("Inserting an object of size 0...\n");
+	testInsertObject(0, false);
+	
+	insertObject(123);
 
 	dumpPool();
 
@@ -595,6 +599,18 @@ static void testDestroyPool()
 // -----------------------------------------------------------------------------
 static void testCompact()
 {
+	printf("Testing compact()\n");
 	
+	destroyPool();
+	initPool();
+	insertObject(131072);
+	insertObject(131072);
+	dropReference(2);
+	insertObject(131072);
+	insertObject(131072);
+	addReference(1);
+	insertObject(131072);
+	dropReference(3);
+	insertObject(5000);
 }
 

@@ -16,11 +16,6 @@ int main(int argc, char *argv[])
   
   id1= insertObject(100);
 
-  // Added by me
-  id2 = insertObject(5);
-  id3 = insertObject(240);
-
-  // added by me ^
   printf("id1 = %lu\n", id1);
   ptr = (char*)retrieveObject(id1);
   for (i = 0; i < 100; i++)
