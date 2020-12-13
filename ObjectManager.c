@@ -114,14 +114,14 @@ Ref insertObject(ulong size)
 	
 	newNode = (struct node *)malloc(sizeof(struct node));
 	
+    // if there is no memory left in the current buffer then call compact
+	if(noMemoryLeft(size, freePtr, currentBuffer))
+	{
+		compact();
+	}
+
 	if (size > 0 && size <= MEMORY_SIZE && bytesInUse + size <= MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
 	{		
-		// if there is no memory left in the current buffer then call compact
-		if(noMemoryLeft(size, freePtr, currentBuffer))
-		{
-			compact();
-		}
-
 		// assign values to newNode
 		newNode -> numBytes = size;
 		newNode -> refCount = 1; // always 1 initially 
@@ -182,6 +182,9 @@ Ref insertObject(ulong size)
 		validateBufferAndPool();
 
 		assert(freePtr != NULL);
+	}
+	else {
+		printf("\nUnable to successfully complete memory allocaiton request.\n");
 	}
 
   	return allocatedID;
@@ -491,9 +494,10 @@ static void compact(void)
 	assert(numOfObjects > 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
 	
 	// display stats
-	printf("\nThe number of objects that exist: %lu\n", numOfObjects);
-	printf("The current number of bytes in use: %lu\n", bytesInUse);
-	printf("The number of bytes collected: %lu\n", bytesCollected);
+	printf("\nGarbage collector statistics:\n");
+	printf("objects: %lu | ", numOfObjects);
+	printf("bytes in use: %lu | ", bytesInUse);
+	printf("bytes freed: %lu\n", bytesCollected);
 	
 	// reset bytes collected for next time compact is called
 	bytesCollected = 0;
