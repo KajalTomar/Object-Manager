@@ -106,7 +106,6 @@ Ref insertObject(ulong size)
 	// PRECONDITIONS: if the pool exists then it is valid. The buffer is valid.
   	// POSTCONDITIONS: the buffer and pool have at least one object, the buffer and pool 
 	// are valid.
-
 	ulong allocatedID = NULL_REF; // for return value
 
 	node * curr = head; // to iterate through the nodes
@@ -129,7 +128,6 @@ Ref insertObject(ulong size)
 		if (!head && size <= MEMORY_SIZE) // if no objects exist at the moment
 		{	
 			assert(numOfObjects == 0);
-			assert(bytesInUse == 0);
 		
 			newNode -> startAddress = freePtr;
 			newNode -> id = 1; // because it's the first one
@@ -202,27 +200,40 @@ void * retrieveObject(Ref id)
 {
   	// PRECONDITIONS: if the pool exists it is valid. The buffer is valid.
   	// POSTCONDITIONS: the buffer and pool are still valid.
-  	
+
 	node * foundNode;
 	uchar * objectID = NULL_REF; // we will return this
-	 
-	if(numOfObjects > 0)
+	
+	if (id == 0 || id > lastID)
 	{
-		validateBufferAndPool();
+		printf("Invalid id exception with id %lu, terminating process.\n", id);
+		exit(0);
 	}
+	else {
+
+		if(numOfObjects > 0)
+		{
+			validateBufferAndPool();
+		}
+		
+		// returns NULL_REF if no object with this id exists on the linked list
+		foundNode = nodeAtID(id); 
+		
+		if (foundNode != NULL_REF) 
+		{
+			// retrieve the object's start address
+			objectID = foundNode -> startAddress;
+		}
+		else
+		{
+			 printf("Invalid id exception with id %lu, terminating process.\n", id);
+		}
+		
+		if(numOfObjects > 0)
+		{
+			validateBufferAndPool();
+		}
 	
-	// returns NULL_REF if no objecy with this id exists on the linked list
-	foundNode = nodeAtID(id); 
-	
-	if (foundNode) 
-	{
-		// retrieve the object's start address
-		objectID = foundNode -> startAddress;
-	}
-	
-	if(numOfObjects > 0)
-	{
-		validateBufferAndPool();
 	}
 	
 	return objectID;
@@ -324,7 +335,6 @@ void initPool(void)
   	// POSTCONDITIONS: freePtr is not null, freePtr is pointing to buffer_1, head is NULL
 	// numOfObjects, bytesInUse and bytesCollected are all 0
 	// currentBuffer is pointing to buffer_1. 
-	
 	destroyPool(); // just in case
 	
 	// initialize these
@@ -353,7 +363,6 @@ void destroyPool(void)
 {
   	// PRECONDITIONS: numOfObjects >= 0, if the pool exists it is valid. Buffer is valid. 
   	// POSTCONDITIONS: numOfObjects == 0, bytesInUse == 0, head == NULL. 
-
 	node * curr = head; // to iterate
 	node * temp = NULL; 
 
@@ -406,7 +415,6 @@ void dumpPool(void)
   	// POSTCONDITIONS: the pool and buffer are still valid, numOfObjects >= 0, bytesInUse >= 0
   
 	node * curr = head; // to traverse the linked list
-
 	printf("\n-----------------------------CURRENT POOL---------------------------------------\n");
 
 	if (numOfObjects > 0)
@@ -451,7 +459,6 @@ static void compact(void)
 	// two buffers, numOfObjects > 0, bytesInUse >= 0
   	// POSTCONDITIONS: the buffer and pool are valid, freePtr is pointing within one of 
 	// the two buffers, numOfObjects > 0, bytesInUse >= 0
-
 	node * curr = head;
 	bytesCollected = 0; // reset 
 	ulong bytesFreed = 0;
@@ -522,7 +529,6 @@ bool noMemoryLeft(ulong size, uchar * freePtr, uchar * buffer)
 	// PRECONDITIONS: size <= MEMORY_SIZE, if the pool exists then it is valid, buffer is 
 	// valid.
 	// POSTCONDITIONS: if the pool exists, then it is still valid, buffer is valid.
-
 	bool noMemoryLeft = false;
 
 	assert(size <= MEMORY_SIZE);
@@ -561,7 +567,6 @@ void removeNode(Ref idToDel)
   	// PRECONDITIONS: if the pool exists then it is valid, buffer is valid. numOfObjects >= 0  
   	// POSTCONDITIONS: the buffer and pool are still valid, numOfObject >= 0, if numOfObjects 
 	// is more than 0 then head still exists.
-
 	node * curr = head; 
 	node * prev = NULL;
 	node * nextNode = NULL; 
@@ -639,7 +644,6 @@ static node * nodeAtID(Ref id)
 {
 	// PRECONDITIONS: if the pool exists it is valid. Buffer is valid.  
   	// POSTCONDITIONS: the buffer and pool are still valid.
-	
 	node * curr = head; // to iterate
 	node * foundNode = NULL_REF; // to return
 	
@@ -649,7 +653,7 @@ static node * nodeAtID(Ref id)
 	{
 		validateBufferAndPool();
 	}
-
+	
 	// go therough the entire linked list or until we find an object with this id
 	while(curr && !foundID)
 	{
