@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // NAME: Kajal Tomar
 // STUDENT NUMBER: 7793306
 // COURSE: COMP2160, SECTION: A01
@@ -9,7 +9,7 @@
 // garbage collector. The clients will call functions avaliable in the interface 
 // to allocate and retrieve memory. 
 // This memory manager will automatically clean up unused memory.  
-//-------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 #include<stdio.h>
 #include<stdlib.h>
