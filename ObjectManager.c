@@ -381,6 +381,8 @@ void destroyPool(void)
 		// decrement numOfObjects by one
 		numOfObjects--;
 	}
+	
+	bytesInUse = 0;
 
 	head = NULL;
 
@@ -452,6 +454,7 @@ static void compact(void)
 
 	node * curr = head;
 	bytesCollected = 0; // reset 
+	ulong bytesFreed = 0;
 
 	validateBufferAndPool();
 
@@ -488,6 +491,9 @@ static void compact(void)
 		curr = curr -> next;
 	}
 
+	bytesFreed = bytesInUse - bytesCollected;
+	bytesInUse = bytesCollected; 
+
 	// make sure the pool is still valid
 	validateBufferAndPool();
 
@@ -497,7 +503,7 @@ static void compact(void)
 	printf("\nGarbage collector statistics:\n");
 	printf("objects: %lu | ", numOfObjects);
 	printf("bytes in use: %lu | ", bytesInUse);
-	printf("bytes freed: %lu\n", bytesCollected);
+	printf("bytes freed: %lu\n", bytesFreed);
 	
 	// reset bytes collected for next time compact is called
 	bytesCollected = 0;
@@ -572,8 +578,6 @@ void removeNode(Ref idToDel)
 		{
 			assert(head);
 
-			bytesInUse -= head -> numBytes; // update bytes in use
-			
 			head -> refCount--; // making the refCount == 0
 
 			head = head -> next; 
@@ -595,9 +599,7 @@ void removeNode(Ref idToDel)
 				{
 					curr -> refCount--; // making the refCount == 0
 
-					nextNode = curr -> next; // nextNode will become the node after prev to exclude curr
-					
-					bytesInUse -= curr -> numBytes; 
+					nextNode = curr -> next; // nextNode will become the node after prev to exclude curr 
 
 					free(curr); // free the memory!
 					curr = NULL;
@@ -709,7 +711,7 @@ static void validateBufferAndPool(void)
 
 	// assert the recounts
 	assert(numOfObjects == countNumOfObjs);
-	assert(countBytesInUse == bytesInUse);
+	assert(countBytesInUse <= bytesInUse);
 	
 	assert(bytesInUse <= MEMORY_SIZE);
 
