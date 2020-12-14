@@ -75,8 +75,6 @@ Ref insertObject(ulong size)
 	node * curr = head; // to iterate through the nodes
 	node * newNode; 
 	
-	newNode = (struct node *)malloc(sizeof(struct node));
-	
     // if there is no memory left in the current buffer then call compact
 	if(noMemoryLeft(size, freePtr, currentBuffer))
 	{
@@ -85,6 +83,8 @@ Ref insertObject(ulong size)
 
 	if (size > 0 && size <= MEMORY_SIZE && bytesInUse + size <= MEMORY_SIZE) // if we can fit this size into the buffer then insert it!
 	{		
+		newNode = (struct node *)malloc(sizeof(struct node));
+		
 		// assign values to newNode
 		newNode -> numBytes = size;
 		newNode -> refCount = 1; // always 1 initially 
@@ -168,12 +168,12 @@ void * retrieveObject(Ref id)
 	node * foundNode;
 	uchar * objectID = NULL_REF; // we will return this
 	
+	// if the id is out of range of the pool
 	if (id == 0 || id > lastID)
 	{
-		printf("Invalid id exception with id %lu, terminating process.\n", id);
-		//exit(0);
+		printf("Invalid id exception with id %lu.\n", id);
 	}
-	else {
+	else { // id is within range
 
 		if(numOfObjects > 0)
 		{
@@ -190,7 +190,7 @@ void * retrieveObject(Ref id)
 		}
 		else
 		{
-			 printf("Invalid id exception with id %lu, terminating process.\n", id);
+			 printf("Invalid id exception with id %lu.\n", id);
 		}
 		
 		if(numOfObjects > 0)
@@ -327,6 +327,7 @@ void destroyPool(void)
 {
   	// PRECONDITIONS: numOfObjects >= 0, if the pool exists it is valid. Buffer is valid. 
   	// POSTCONDITIONS: numOfObjects == 0, bytesInUse == 0, head == NULL. 
+	
 	node * curr = head; // to iterate
 	node * temp = NULL; 
 
@@ -388,12 +389,12 @@ void dumpPool(void)
 		// go through each node until we get to the end
 		while(curr != NULL)
 		{
-
-		printf("Reference ID: %lu | ", curr -> id);
-		printf("Starting address: %p | ", curr -> startAddress);
-		printf("Size (in bytes): %lu | ", curr -> numBytes);
-		printf("Current refcount: %lu\n", curr -> refCount);	
-		curr = curr -> next;
+			// display the stats
+			printf("Reference ID: %lu | ", curr -> id);
+			printf("Starting address: %p | ", curr -> startAddress);
+			printf("Size (in bytes): %lu | ", curr -> numBytes);
+			printf("Current refcount: %lu\n", curr -> refCount);	
+			curr = curr -> next;
 		}
 
 		validateBufferAndPool();
@@ -422,7 +423,7 @@ static void compact(void)
   	// PRECONDITIONS: the buffer and pool are valid, freePtr pointing within one of the 
 	// two buffers, numOfObjects >= 0, bytesInUse >= 0
   	// POSTCONDITIONS: the buffer and pool are valid, freePtr is pointing within one of 
-	// the two buffers, numOfObjects > 0, bytesInUse >= 0
+	// the two buffers, numOfObjects >= 0, bytesInUse >= 0
 	node * curr = head;
 	bytesCollected = 0; // reset 
 	ulong bytesFreed = 0;
@@ -474,7 +475,7 @@ static void compact(void)
 		validateBufferAndPool();
 	}
 
-	assert(numOfObjects > 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
+	assert(numOfObjects >= 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
 	
 	// display stats
 	printf("\nGarbage collector statistics:\n");
@@ -508,7 +509,7 @@ bool noMemoryLeft(ulong size, uchar * freePtr, uchar * buffer)
 		validateBufferAndPool();
 	}
 
-	// if adding an object of this size with point the freePtr outside the 
+	// if adding an object of this size would point the freePtr outside the 
 	// range of the buffer then noMemoryLeft is true.
 	if((freePtr + size) > (&buffer[MEMORY_SIZE-1]+1))
 	{
@@ -684,7 +685,7 @@ static void validateBufferAndPool(void)
 
 	// assert the recounts
 	assert(numOfObjects == countNumOfObjs);
-	assert(countBytesInUse <= bytesInUse);
+	assert(countBytesInUse <= bytesInUse); // less than because we aren't recounting the bytes that need to be freed with compact
 	
 	assert(bytesInUse <= MEMORY_SIZE);
 
