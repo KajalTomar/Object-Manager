@@ -52,42 +52,6 @@ static void removeNode(Ref);
 static node * nodeAtID(Ref);
 static void validateBufferAndPool(void);
 
-
-// JUST FOR TESTING
-ulong getNumOfObjects(void)
-{
-	return numOfObjects;
-}
-
-ulong getRefCount(Ref id)
-{
-	node * foundNode = nodeAtID(id);
-	ulong count = NULL_REF;
-
-	if (foundNode != NULL_REF)
-	{
-		count = foundNode -> refCount;
-	}
-
-	return count;
-}
-
-void displayNode(Ref id)
-{
-	node * displayNode = nodeAtID(id);
-
-	if (displayNode != NULL_REF)
-	{
-		printf("ID: %lu\n", displayNode -> id);
-		printf("Ref Count: %lu\n", displayNode -> refCount);
-		printf("Number of Bytes: %lu\n", displayNode -> numBytes);
-		printf("StartAddress: %p\n\n", displayNode -> startAddress);
-	}
-	else
-	{
-		printf("There is no node with the id of %lu.\n\n", id);
-	}
-}
 // -----------------------------------------------------------------------------------------------
 // FUNCTIONS
 // -----------------------------------------------------------------------------------------------
