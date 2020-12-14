@@ -44,9 +44,6 @@ ulong getRefCount(Ref);
 	
 int main(void)
 {
-
-
-
 	insertObjectCases();
 	retrieveObjectCases();
 	addReferenceCases(); 
@@ -168,6 +165,9 @@ static void retrieveObjectCases(void)
 // -----------------------------------------------------------------------------
 static void addReferenceCases(void)
 {
+	destroyPool();
+	initPool();
+
 	insertObject(100);
 	insertObject(1234);
 	insertObject(12);
@@ -179,13 +179,11 @@ static void addReferenceCases(void)
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
-	printf("Adding 50 references to id 2...\n");
-	for(int i = 0; i < 49; i++)
-	{
-		addReferences(2);	
-	}
-	
-	testAddReference(2, 50);
+	printf("Adding 5 references to id 2...\n");
+	addReference(2);	
+	addReference(2);	
+	addReference(2);	
+	testAddReference(2, 5);
 
 	printf("Adding 3 references to id 3...\n");
 	addReference(3);
@@ -231,7 +229,7 @@ static void dropReferenceCases(void)
 	
 	for(int i = 0; i < 50; i++)
 	{
-		addReferences(2);	
+		addReference(2);	
 	}
 	
 	addReference(3);
@@ -260,12 +258,12 @@ static void dropReferenceCases(void)
 	dumpPool();
 
 	printf("Dropping all the references for the first node on the list...\n");
-	dropReference(1)
-	dropReference(1)
+	dropReference(1);
+	dropReference(1);
 	testDropReference(1, 0);
 	
 	printf("Dropping all the references for the last node on the list...\n");
-	dropReference(4)
+	dropReference(4);
 	testDropReference(4, 0);
 
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
@@ -523,11 +521,15 @@ static void testDropReference(Ref id, Ref expectedRefCount)
 // -----------------------------------------------------------------------------
 static void testDestroyPool()
 {
-	ulong objectsLeft; 
-	bool destroyed = false; 
+	ulong MAX_OBJECTS = MEMORY_SIZE;
+	ulong objectsLeft = 0; 
 	
-	/*
 	destroyPool();
+
+	for(int i = 1; i <= MAX_OBJECTS; i++)
+	{
+		objectsLeft += getRefCount(i);
+	}
 	
 	if(objectsLeft == 0)
 	{
@@ -539,7 +541,7 @@ static void testDestroyPool()
 		failedTests++;
 	}
 
-	totalTests++; */
+	totalTests++; 
 
 } // testDestroyPool
 
@@ -566,21 +568,4 @@ static void testCompact()
 	insertObject(5000);
 }
 
-// -----------------------------------------------------------------------------
-// getRefCount
-// 
-// PURPOSE: count the amount of references an object id has by dropping the 
-// current references and counting it. 
-// -----------------------------------------------------------------------------
-ulong getRefCount(Ref id)
-{
-	ulong refCount = 0;
-	
-	while(retrieveObject(id))
-	{
-		refCount++;
-	}
-	
-	return refCount; 
-} // getRefCount
 

@@ -40,7 +40,7 @@ typedef unsigned char uchar;
 Ref insertObject( ulong size );
 
 // returns a pointer to the object being requested given by the reference id
-void *retrieveObject( Ref ref );
+void * retrieveObject( Ref ref );
 
 // update our index to indicate that we have another reference to the given object
 void addReference( Ref ref );

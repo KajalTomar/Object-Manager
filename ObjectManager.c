@@ -146,7 +146,7 @@ Ref insertObject(ulong size)
 		assert(freePtr != NULL);
 	}
 	else {
-		printf("\nUnable to successfully complete memory allocaiton request.\n");
+		printf("\nUnable to successfully complete memory allocation request.\n");
 	}
 
   	return allocatedID;
@@ -171,7 +171,7 @@ void * retrieveObject(Ref id)
 	if (id == 0 || id > lastID)
 	{
 		printf("Invalid id exception with id %lu, terminating process.\n", id);
-		exit(0);
+		//exit(0);
 	}
 	else {
 
@@ -495,7 +495,6 @@ bool noMemoryLeft(ulong size, uchar * freePtr, uchar * buffer)
 	// POSTCONDITIONS: if the pool exists, then it is still valid, buffer is valid.
 	bool noMemoryLeft = false;
 
-	assert(size <= MEMORY_SIZE);
 	assert(freePtr >= buffer);
 
 	if(numOfObjects > 0)
