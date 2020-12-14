@@ -391,8 +391,8 @@ void dumpPool(void)
 
 		printf("Reference ID: %lu | ", curr -> id);
 		printf("Starting address: %p | ", curr -> startAddress);
-		printf("Size (in bytes): %lu\n", curr -> numBytes);
-		
+		printf("Size (in bytes): %lu | ", curr -> numBytes);
+		printf("Current refcount: %lu\n", curr -> refCount);	
 		curr = curr -> next;
 		}
 
@@ -420,16 +420,19 @@ void dumpPool(void)
 static void compact(void)
 {
   	// PRECONDITIONS: the buffer and pool are valid, freePtr pointing within one of the 
-	// two buffers, numOfObjects > 0, bytesInUse >= 0
+	// two buffers, numOfObjects >= 0, bytesInUse >= 0
   	// POSTCONDITIONS: the buffer and pool are valid, freePtr is pointing within one of 
 	// the two buffers, numOfObjects > 0, bytesInUse >= 0
 	node * curr = head;
 	bytesCollected = 0; // reset 
 	ulong bytesFreed = 0;
+	
+	if(numOfObjects > 0)
+	{
+		validateBufferAndPool();
+	}
 
-	validateBufferAndPool();
-
-	assert(numOfObjects > 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
+	assert(numOfObjects >= 0 && bytesInUse >= 0 && bytesInUse <= MEMORY_SIZE);
 
 	// switch buffers
 	if(currentBuffer == buffer_1)
@@ -465,8 +468,11 @@ static void compact(void)
 	bytesFreed = bytesInUse - bytesCollected;
 	bytesInUse = bytesCollected; 
 
-	// make sure the pool is still valid
-	validateBufferAndPool();
+	if(numOfObjects>0)
+	{
+		// make sure the pool is still valid
+		validateBufferAndPool();
+	}
 
 	assert(numOfObjects > 0 && bytesInUse > 0 && bytesInUse < MEMORY_SIZE);
 	

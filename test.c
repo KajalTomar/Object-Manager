@@ -28,17 +28,15 @@ int failedTests = 0;
 // These functions call the test functions in order to test different general and edge cases
 static void insertObjectCases(void);
 static void retrieveObjectCases(void);
-static void addReferenceCases(void);
-static void dropReferenceCases(void);
-static void destroyPoolCases(void);
 
 // These functions test specific functions and display the result
 static void testInsertObject(ulong, bool);
 static void testRetrieveObject(Ref, bool);
-static void testAddReference(Ref, ulong);
-static void testDropReference(Ref, ulong);
 static void testDestroyPool(void);
 static void testCompact(void);
+static void testAddReference(void);
+static void testDropReference(void);
+static void testDestroyPool(void);
 
 ulong getRefCount(Ref);
 	
@@ -46,12 +44,13 @@ int main(void)
 {
 	insertObjectCases();
 	retrieveObjectCases();
-	addReferenceCases(); 
-	dropReferenceCases();
-	destroyPoolCases();
+	testAddReference(); 
+	testDropReference();
+	testDestroyPool();
 	testCompact(); 
 
 	dumpPool();
+	destroyPool();
 
 	printf("\n\n--------------------------------------------------------------------------------------------------\n");
 	printf("TOTAL TESTS: %i: \n", totalTests);
@@ -160,10 +159,9 @@ static void retrieveObjectCases(void)
 // -----------------------------------------------------------------------------
 // addReferenceCases
 // 
-// PURPOSE: calls the testAddReference function to test normal and edge cases 
-// for the addReference function.
+// PURPOSE: tests normal and edge cases for the addReference function.
 // -----------------------------------------------------------------------------
-static void addReferenceCases(void)
+static void testAddReference(void)
 {
 	destroyPool();
 	initPool();
@@ -199,6 +197,7 @@ static void addReferenceCases(void)
 	printf("Adding 3 references to the first id (=1)...\n");
 	addReference(1);
 	addReference(1);
+	addReference(1);
 	dumpPool();
 	
 	printf("Adding a reference to the last id (=4) ...\n");
@@ -206,13 +205,13 @@ static void addReferenceCases(void)
 	dumpPool();
 	
 	printf("Adding a reference to an id (=7) that doesn't exist...\n");
-	testAddReference(7);
+	addReference(7);
 	dumpPool();
 	
-	printf("Dropping an address to 0, then trying to add a reference to it...\n");
+	printf("Dropping the reference of id 4 to 0, then trying to add a reference to it...\n");
 	dropReference(4);
 	dropReference(4);
-	testAddReference(4);
+	addReference(4);
 	dumpPool();
 	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
@@ -222,10 +221,9 @@ static void addReferenceCases(void)
 // -----------------------------------------------------------------------------
 // dropReferenceCases
 // 
-// PURPOSE: calls the testDropRef function to test normal and edge cases 
-// for the dropReference function.
+// PURPOSE: tests normal and edge cases for the dropReference function.
 // -----------------------------------------------------------------------------
-static void dropReferenceCases(void)
+static void testDropReference(void)
 {
 	destroyPool();
 	initPool();
@@ -255,10 +253,12 @@ static void dropReferenceCases(void)
 	// test and print out the progress from the typical cases
 	
 	printf("Dropping the a reference for id 2...\n");
+	dumpPool();
 	dropReference(2);
 	dumpPool();
 
 	printf("Dropping a reference for id 3...\n");
+	dumpPool();
 	dropReference(3);
 	dumpPool();
 	
@@ -266,12 +266,14 @@ static void dropReferenceCases(void)
 	printf("Testing edge cases.\n\n");
 
 	printf("Dropping all the references for the first node on the list...\n");
+	dumpPool();
 	dropReference(1);
 	dropReference(1);
 	dropReference(1);
 	dumpPool();
 	
 	printf("Dropping all the references for the last node on the list...\n");
+	dumpPool();
 	dropReference(4);
 	dropReference(4);
 	dumpPool();
@@ -283,10 +285,9 @@ static void dropReferenceCases(void)
 
 // destroyPoolCases
 // 
-// PURPOSE: calls the destroyPoolCases function to test normal and edge cases 
-// for the destroyPool function.
+// PURPOSE: tests normal and edge cases for the destroyPool function.
 // -----------------------------------------------------------------------------
-static void destroyPoolCases(void)
+static void testDestroyPool(void)
 {
 	initPool();
 	
@@ -312,7 +313,7 @@ static void destroyPoolCases(void)
 	dumpPool();
 
 	printf("Destroying pool...\n");
-	testDestroyPool();
+	destroyPool();
 	dumpPool();
 	
 	printf("---------------------------\n");
@@ -320,15 +321,15 @@ static void destroyPoolCases(void)
 	
 	initPool();
 	insertObject(34);
-	dumpPool();
 	printf("Destroying a pool with only on object...\n");
+	dumpPool();
 	destroyPool();
 	dumpPool();
 
 	initPool();
 	insertObject(1);
-	dumpPool();
 	printf("Destroying a pool with only one object of size 1...\n");
+	dumpPool();
 	destroyPool();
 	dumpPool();
 	
@@ -457,15 +458,26 @@ static void testCompact()
 	
 	destroyPool();
 	initPool();
+
+	// should get added without needing compact
+	printf("Adding an object of size 131072...\n");
+	insertObject(131072); 
+	printf("Adding an object of size 131072...\n");
 	insertObject(131072);
-	insertObject(131072);
+	printf("Dropping the reference to id=2...\n");
 	dropReference(2);
+	printf("Adding an object of size 131072...\n");
 	insertObject(131072);
+	printf("Adding an object of size 131072... this should get added if the id=2 was dropped and the space was freed...\n");
 	insertObject(131072);
+	printf("Adding a reference to id=1...\n");
 	addReference(1);
-	insertObject(131072);
-	dropReference(3);
-	insertObject(5000);
+	printf("Adding an object of size 131072..\n");
+	insertObject(131072); // should get added
+	printf("Dropping the reference to id=3...\n");
+	dropReference(3);	
+	printf("Adding an object of size 5000... this will only get added if id=3 was dropped and the free space was freed.\n");
+	insertObject(5000); // shouldn't be added
 }
 
 
