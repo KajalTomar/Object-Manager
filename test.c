@@ -183,30 +183,38 @@ static void addReferenceCases(void)
 	addReference(2);	
 	addReference(2);	
 	addReference(2);	
-	testAddReference(2, 5);
-
+	addReference(2);
+	dumpPool();
+	
 	printf("Adding 3 references to id 3...\n");
 	addReference(3);
 	addReference(3);
+	addReference(3);	
+	dumpPool();
 	
-	testAddReference(3, 3);
 	
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
 	printf("Adding 3 references to the first id (=1)...\n");
 	addReference(1);
-	testAddReference(1, 3);
+	addReference(1);
+	dumpPool();
 	
 	printf("Adding a reference to the last id (=4) ...\n");
-	testAddReference(4, 2);
+	addReference(4);
+	dumpPool();
 	
 	printf("Adding a reference to an id (=7) that doesn't exist...\n");
-	testAddReference(7, -1);
+	testAddReference(7);
+	dumpPool();
 	
 	printf("Dropping an address to 0, then trying to add a reference to it...\n");
-	testAddReference(3,-1);
-
+	dropReference(4);
+	dropReference(4);
+	testAddReference(4);
+	dumpPool();
+	
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // addReferenceCases
 
@@ -247,24 +255,26 @@ static void dropReferenceCases(void)
 	// test and print out the progress from the typical cases
 	
 	printf("Dropping the a reference for id 2...\n");
-	testDropReference(2, 49);
+	dropReference(2);
+	dumpPool();
 
 	printf("Dropping a reference for id 3...\n");
-	testDropReference(3, 2);
-
+	dropReference(3);
+	dumpPool();
+	
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
-
-	dumpPool();
 
 	printf("Dropping all the references for the first node on the list...\n");
 	dropReference(1);
 	dropReference(1);
-	testDropReference(1, 0);
+	dropReference(1);
+	dumpPool();
 	
 	printf("Dropping all the references for the last node on the list...\n");
 	dropReference(4);
-	testDropReference(4, 0);
+	dropReference(4);
+	dumpPool();
 
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 	destroyPool();
@@ -303,32 +313,32 @@ static void destroyPoolCases(void)
 
 	printf("Destroying pool...\n");
 	testDestroyPool();
-
+	dumpPool();
+	
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
 	initPool();
 	insertObject(34);
-
-	printf("Destroying a pool with only on object...\n");
 	dumpPool();
-	testDestroyPool();
+	printf("Destroying a pool with only on object...\n");
+	destroyPool();
+	dumpPool();
 
 	initPool();
 	insertObject(1);
-
-	printf("Destroying a pool with only one object of size 1...\n");
 	dumpPool();
-	testDestroyPool();
+	printf("Destroying a pool with only one object of size 1...\n");
+	destroyPool();
+	dumpPool();
 	
 	initPool();
 	insertObject(MEMORY_SIZE);
-	
 	printf("Destroying a pool with only one object of the max memory size...\n");
 	dumpPool();
-	testDestroyPool();
-	
-	
+	destroyPool();
+	dumpPool();
+		
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // destroyPoolCases
 
@@ -434,116 +444,6 @@ static void testRetrieveObject(Ref ref, bool expectedResult)
 	totalTests++;
 
 } // testRetrieveObject
-
-// -----------------------------------------------------------------------------
-// testAddReference
-// 
-// PURPOSE: Test if the addReference function correctly adds another reference
-// (or does not add one) to an object.
-// INPUT: ref of the object to add another reference to, the expected result 
-// (Boolean) to compare the results with.
-// -----------------------------------------------------------------------------
-static void testAddReference(Ref id, ulong expectedRefCount)
-{
-	ulong actualCount = 0;
-
-	addReference(id);
-	actualCount = getRefCount(id);
-
-	if(actualCount == expectedRefCount)
-	{
-		printf("Passed! The ref count is %lu.\n\n", actualCount);
-	}
-	else if(expectedRefCount == -1 && actualCount == 0)
-	{
-		printf("Passed! Tried to add a reference to an object that doesn't exist but couldn't.\n\n");
-	}
-	else // if (actualCount != expectedCount)
-	{
-		printf("FAILED! The ref count is %lu, but it should be %lu,\n\n",actualCount, expectedRefCount);
-		failedTests++;
-	}
-
-	totalTests++;
-
-} // testAddReference
-
-// -----------------------------------------------------------------------------
-// testDropReference
-// 
-// PURPOSE: Test if the dropReference function correctly drops a reference
-// to an object.
-// INPUT: ref of the object to drop the reference to, the expected result 
-// (Boolean) to compare the results with.
-// -----------------------------------------------------------------------------
-static void testDropReference(Ref id, Ref expectedRefCount)
-{
-	Ref actualRefCount;
-
-	dropReference(id);
-
-	actualRefCount = getRefCount(id); 
-
-	if(actualRefCount == expectedRefCount)
-	{
-		if (actualRefCount == NULL_REF)
-		{
-			printf("Passed! The object had 0 refCounts after dropping this one so it was deleted from the list.\n");
-		}
-		else
-		{
-			printf("Passed! As expected, exactly one reference was dropped.\n");
-		}
-	}
-	else
-	{
-		if(actualRefCount == NULL_REF)
-		{
-			printf("FAILED: We didn't expect the ref count to become zero, but it did and that node was removed from the list.\n");		
-		}
-		else
-		{
-			printf("FAILED: We expected the ref count to become zero and for the node to be deleted but it was *not*.\n");
-		}
-
-		failedTests++;
-	}
-
-	totalTests++;
-
-} // testDropReference
-
-
-// -----------------------------------------------------------------------------
-// testDestroyPool
-// 
-// PURPOSE: Test if the destroyPool function correctly destroys the pool.
-// -----------------------------------------------------------------------------
-static void testDestroyPool()
-{
-	ulong MAX_OBJECTS = MEMORY_SIZE;
-	ulong objectsLeft = 0; 
-	
-	destroyPool();
-
-	for(int i = 1; i <= MAX_OBJECTS; i++)
-	{
-		objectsLeft += getRefCount(i);
-	}
-	
-	if(objectsLeft == 0)
-	{
-		printf("PASSED! The pool is empty.\n");
-	}
-	else
-	{
-		printf("Failed: There are still %lu objects left in the pool.\n", objectsLeft);
-		failedTests++;
-	}
-
-	totalTests++; 
-
-} // testDestroyPool
 
 // -----------------------------------------------------------------------------
 // compact
