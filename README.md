@@ -1,6 +1,6 @@
 # Object-Manager
 
-I wrote get methods in ObjectManager.c to retrieve refCount and the current number
+<p>I wrote get methods in ObjectManager.c to retrieve refCount and the current number
 of objects to help me test the add/drop reference, destroyPool, and compact functions.
 Then was I was able make sure my results were accurate.
 
@@ -11,5 +11,5 @@ if my functions work.
 If I am mistaken and I should have kept the get functions please let me know and I can
 submit that version.
 
-Thank you!
+Thank you!</p>
                                                                                                                                                                                                             ~                    
