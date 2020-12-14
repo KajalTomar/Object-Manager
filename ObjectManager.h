@@ -24,11 +24,6 @@ typedef unsigned long Ref;
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 
-// only for testing 
-void displayNode(Ref ref);
-ulong getNumOfObjects(void);
-ulong getRefCount(Ref id);
-
 /*
  * Note that we provide our entire interface via this object module
  * and completely hide our index (see course notes). This allows us to
