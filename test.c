@@ -40,6 +40,8 @@ static void testDropReference(Ref, ulong);
 static void testDestroyPool(void);
 static void testCompact(void);
 
+ulong getRefCount(Ref);
+	
 int main(void)
 {
 
