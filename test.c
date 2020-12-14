@@ -166,51 +166,46 @@ static void retrieveObjectCases(void)
 // -----------------------------------------------------------------------------
 static void addReferenceCases(void)
 {
+	insertObject(100);
+	insertObject(1234);
+	insertObject(12);
+	insertObject(123);
+	
 	printf("----------------------------------------------------------------------------------------------------------\n");
 	printf("TESTS FOR addReference()\n");
 	
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
-	printf("Adding a reference to id 2...\n");
-	testAddReference(2, 2);
+	printf("Adding 50 references to id 2...\n");
+	for(int i = 0; i < 49; i++)
+	{
+		addReferences(2);	
+	}
+	
+	testAddReference(2, 50);
 
-	printf("Adding a reference to id 2...\n");
-	testAddReference(2, 3);
+	printf("Adding 3 references to id 3...\n");
+	addReference(3);
+	addReference(3);
 	
-	printf("Adding a reference to id 3...\n");
-	testAddReference(3, 2);
+	testAddReference(3, 3);
 	
-	printf("Adding a reference to id 2...\n");
-	testAddReference(2, 4);
-	
-	// drop a reference then add a reference
-
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
 	
-	printf("Adding a reference to the first id (=1)...\n");
-	testAddReference(1, 2);
-	
-	printf("Adding a reference to the last id (=4)...\n");
-	testAddReference(4, 2);
-	
-	printf("Adding a reference to the first id (=1) again...\n");
+	printf("Adding 3 references to the first id (=1)...\n");
+	addReference(1);
 	testAddReference(1, 3);
 	
-	printf("Adding a reference to the last id (=4) again...\n");
-	testAddReference(4, 3);
+	printf("Adding a reference to the last id (=4) ...\n");
+	testAddReference(4, 2);
 	
 	printf("Adding a reference to an id (=7) that doesn't exist...\n");
-	testAddReference(7, 0);
+	testAddReference(7, -1);
 	
-	for(int i = 5; i < 25; i++)
-	{
-		printf("Adding a another reference to id 2...\n");
-		testAddReference(2, i);		
-	}
-	
-	// drop a reference to 0 then try to add another reference
+	printf("Dropping an address to 0, then trying to add a reference to it...\n");
+	testAddReference(3,-1);
 
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
 } // addReferenceCases
@@ -224,26 +219,38 @@ static void addReferenceCases(void)
 // -----------------------------------------------------------------------------
 static void dropReferenceCases(void)
 {
+	destroyPool();
+	initPool();
+	
+	insertObject(100);
+	insertObject(1234);
+	insertObject(12);
+	insertObject(123);
+	
+	for(int i = 0; i < 50; i++)
+	{
+		addReferences(2);	
+	}
+	
+	addReference(3);
+	addReference(3);
+	
+	addReference(1);
+	addReference(1);
+	
+	addReference(4);
+	
 	printf("----------------------------------------------------------------------------------------------------------\n");
 	printf("TESTS FOR dropReference()\n");
 	
 	printf("Testing typical cases.\n\n");
 	// test and print out the progress from the typical cases
 	
-	printf("Dropping the references for id 2...\n"); 
-	
-	for(int i = 1; i < 24; i++)
-	{
-		testDropReference(2, 24 - i);
-	}
-	displayNode(2);
-
-	printf("Dropping the last reference for id 2...\n");
-	testDropReference(2, NULL_REF);
-	displayNode(2);
+	printf("Dropping the a reference for id 2...\n");
+	testDropReference(2, 49);
 
 	printf("Dropping a reference for id 3...\n");
-	testDropReference(3, 1);
+	testDropReference(3, 2);
 
 	printf("---------------------------\n");
 	printf("Testing edge cases.\n\n");
@@ -251,27 +258,17 @@ static void dropReferenceCases(void)
 	dumpPool();
 
 	printf("Dropping all the references for the first node on the list...\n");
-	testDropReference(1, 2);
-	testDropReference(1, 1);
-	displayNode(1);
+	dropReference(1)
+	dropReference(1)
+	testDropReference(1, 0);
 	
-	testDropReference(1, NULL_REF);
-	displayNode(1);
-
-
-	printf("Dropping all the references for the first node on the list...\n");
-	testDropReference(4, 2);
-	testDropReference(4, 1);
-	displayNode(4);
-
-	testDropReference(4, NULL_REF);
-	displayNode(4);
-
-	printf("Dropping the only refrence of ID 3 (the single node left on the list)...\n");
-	testDropReference(3, NULL_REF);
-	displayNode(3);
+	printf("Dropping all the references for the last node on the list...\n");
+	dropReference(4)
+	testDropReference(4, 0);
 
 	printf("----------------------------------------------------------------------------------------------------------\n\n");
+	destroyPool();
+	
 } //dropRefrenceCases
 
 // destroyPoolCases
@@ -281,6 +278,8 @@ static void dropReferenceCases(void)
 // -----------------------------------------------------------------------------
 static void destroyPoolCases(void)
 {
+	initPool();
+	
 	printf("----------------------------------------------------------------------------------------------------------\n");
 	printf("TESTS FOR destroyPool()\n");
 	
@@ -289,9 +288,9 @@ static void destroyPoolCases(void)
 	
 	// adding objects to create a typical pool
 	insertObject(100);
-	insertObject(5);
-	insertObject(2);
-	insertObject(55);
+	insertObject(1234);
+	insertObject(12);
+	insertObject(123);
 	insertObject(1);
 	
 	addReference(2);
@@ -314,7 +313,6 @@ static void destroyPoolCases(void)
 	printf("Destroying a pool with only on object...\n");
 	dumpPool();
 	testDestroyPool();
-
 
 	initPool();
 	insertObject(1);
@@ -450,12 +448,15 @@ static void testAddReference(Ref id, ulong expectedRefCount)
 	ulong actualCount = 0;
 
 	addReference(id);
-	
 	actualCount = getRefCount(id);
 
 	if(actualCount == expectedRefCount)
 	{
 		printf("Passed! The ref count is %lu.\n\n", actualCount);
+	}
+	else if(expectedRefCount == -1 && actualCount == 0)
+	{
+		printf("Passed! Tried to add a reference to an object that doesn't exist but couldn't.\n\n");
 	}
 	else // if (actualCount != expectedCount)
 	{
@@ -521,11 +522,11 @@ static void testDropReference(Ref id, Ref expectedRefCount)
 static void testDestroyPool()
 {
 	ulong objectsLeft; 
-
+	bool destroyed = false; 
+	
+	/*
 	destroyPool();
 	
-	objectsLeft = getNumOfObjects();
-
 	if(objectsLeft == 0)
 	{
 		printf("PASSED! The pool is empty.\n");
@@ -536,7 +537,7 @@ static void testDestroyPool()
 		failedTests++;
 	}
 
-	totalTests++;
+	totalTests++; */
 
 } // testDestroyPool
 
@@ -562,4 +563,22 @@ static void testCompact()
 	dropReference(3);
 	insertObject(5000);
 }
+
+// -----------------------------------------------------------------------------
+// getRefCount
+// 
+// PURPOSE: count the amount of references an object id has by dropping the 
+// current references and counting it. 
+// -----------------------------------------------------------------------------
+ulong getRefCount(Ref id)
+{
+	ulong refCount = 0;
+	
+	while(retrieveObject(id))
+	{
+		refCount++;
+	}
+	
+	return refCount; 
+} // getRefCount
 
