@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-// NAME: Kajal Tomar
-// STUDENT NUMBER: 7793306
-// COURSE: COMP2160, SECTION: A01
-// INSTRUCTOR: Dr. Mehdi Niknam
+// NAME: 
+// STUDENT NUMBER: 
+// COURSE: COMP2160, SECTION: 
+// INSTRUCTOR: 
 // ASSIGNMENT: 4, QUESTION: 1
 // 
 // REMARKS: This is an implemention of mark and sweek defragmenting / Mark-compact
