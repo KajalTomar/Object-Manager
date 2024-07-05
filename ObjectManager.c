@@ -1,10 +1,4 @@
 //------------------------------------------------------------------------------
-// NAME: 
-// STUDENT NUMBER: 
-// COURSE: COMP2160, SECTION: 
-// INSTRUCTOR: 
-// ASSIGNMENT: 4, QUESTION: 1
-// 
 // REMARKS: This is an implemention of mark and sweek defragmenting / Mark-compact
 // garbage collector. The clients will call functions avaliable in the interface 
 // to allocate and retrieve memory. 
